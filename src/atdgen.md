@@ -1552,7 +1552,7 @@ file `ocamldoc_example_t.mli` with ocamldoc-compliant comments:
 
 (**
   The type of a point. A value [p] can be created as follows:
-  
+
 {v
 let p = \{ x = 1.2; y = 5.0 \}
 v}

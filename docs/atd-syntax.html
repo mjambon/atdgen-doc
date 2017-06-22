@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="December 14, 2014">
+  <title>atd(1) syntax reference</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" href="atdgen.css">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header>
+<h1 class="title">atd(1) syntax reference</h1>
+<h2 class="author">December 14, 2014</h2>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#name">Name</a></li>
+<li><a href="#synopsis">Synopsis</a></li>
+<li><a href="#introduction">Introduction</a><ul>
+<li><a href="#scope">Scope</a></li>
+<li><a href="#language-overview">Language overview</a></li>
+<li><a href="#editing-and-validating-atd-files">Editing and validating ATD files</a></li>
+</ul></li>
+<li><a href="#atd-language">ATD language</a><ul>
+<li><a href="#notations">Notations</a></li>
+<li><a href="#lexical-rules">Lexical rules</a></li>
+<li><a href="#grammar">Grammar</a></li>
+<li><a href="#predefined-type-names">Predefined type names</a></li>
+<li><a href="#shared-values">Shared values</a></li>
+</ul></li>
+<li><a href="#see-also">See also</a></li>
+</ul>
+</nav>
+<p><a href="https://mjambon.github.io/atdgen-doc/">Home</a></p>
+<h1 id="name">Name</h1>
+<p>atd - syntax for cross-language <strong>a</strong>djustable <strong>t</strong>ype <strong>d</strong>efinitions</p>
+<h1 id="synopsis">Synopsis</h1>
+<p>atdcat [<em>infile</em><strong>.atd</strong>] [<em>options</em>...]</p>
+<p>atdcat <strong>-version</strong></p>
+<p>atdcat <strong>-help</strong></p>
+<h1 id="introduction">Introduction</h1>
+<p>ATD stands for Adjustable Type Definitions.</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* This is a sample ATD file *)</span>
+
+<span class="kw">type</span> profile = {
+  id : <span class="dt">string</span>;
+  email : <span class="dt">string</span>;
+  ~email_validated : <span class="dt">bool</span>;
+  name : <span class="dt">string</span>;
+  ?real_name : <span class="dt">string</span> <span class="dt">option</span>;
+  ~about_me : <span class="dt">string</span> <span class="dt">list</span>;
+  ?gender : gender <span class="dt">option</span>;
+  ?date_of_birth : date <span class="dt">option</span>;
+}
+
+<span class="kw">type</span> gender = [ <span class="dt">Female</span> | <span class="dt">Male</span> ]
+
+<span class="kw">type</span> date = {
+  year : <span class="dt">int</span>;
+  month : <span class="dt">int</span>;
+  day : <span class="dt">int</span>;
+}</code></pre></div>
+<p>ATD is a language for defining data types across multiple programming languages and multiple data formats. That's it.</p>
+<p>We provide an OCaml library that provides a parser and a collection of tools that make it easy to write data validators and code generators based on ATD definitions.</p>
+<p>Unlike big frameworks that provide everything in one monolithic package, we split the problem of data exchange into logical modules and ATD is one of them. In particular, we acknowledge that the following pieces have little in common and should be defined and implemented separately:</p>
+<ul>
+<li>data type specifications</li>
+<li>transport protocols</li>
+<li>serialization formats</li>
+</ul>
+<p>Ideally we want just one single language for defining data types and it should accomodate all programming languages and data formats. ATD can play this role, but its OCaml implementation makes it particularly easy to translate ATD specifications into other interface definition languages if needed.</p>
+<p>It is however much harder to imagine that a single transport protocol and a single serialization format would ever become the only ones used. A reader from the future might wonder why we are even considering defining a transport protocol and a serialization format together. This has been a widespread practice at least until the beginning of the 21st century (ONC RPC, ICE, Thrift, etc.). For mysterious reasons, people somehow became convinced that calls to remote services should be made to mimic internal function calls, pretending that nothing really bad could happen on the way between the caller and the remote service. Well, I don't let my 3-old daughter go to school by herself because the definition of the external world is precisely that it is unsafe.</p>
+<p>Data input is by definition unsafe. A program whose internal data is corrupted should abort but a failed attempt to read external data should not cause a program to abort. On the contrary, a program should be very resistent to all forms of data corruption and attacks and provide the best diagnosis possible when problems with external data occur.</p>
+<p>Because data exchange is critical and involves multiple partners, we depart from magic programming language-centric or company-centric approaches. We define ATD, a data type definition language designed for maximum expressivity, compatibility across languages and static type checking of programs using such data.</p>
+<h2 id="scope">Scope</h2>
+<p>ATD offers a core syntax for type definitions, i.e. an idealized view of the structure of data. Types are mapped to each programming language or data format using language-specific conventions. Annotations can complete the type definitions in order to specify options for a particular language. Annotations are placed in angle brackets after the element they refer to:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> profile = {
+  id : <span class="dt">int</span> &lt;ocaml repr=<span class="st">&quot;int64&quot;</span>&gt;;
+    <span class="co">(*</span>
+<span class="co">       An int here will map to an OCaml int64 instead of</span>
+<span class="co">       OCaml&#39;s default int type.</span>
+<span class="co">       Other languages than OCaml will use their default int type.</span>
+<span class="co">    *)</span>
+
+  age : <span class="dt">int</span>;
+    <span class="co">(* No annotation here, the default int type will be used. *)</span>
+}</code></pre></div>
+<p>ATD supports:</p>
+<ul>
+<li>the following atomic types: bool, int, float, string and unit;</li>
+<li>built-in list and option types;</li>
+<li>records aka structs with a syntax for optional fields with or without default;</li>
+<li>tuples;</li>
+<li>sum types aka variant types, algebraic data types or tagged unions;</li>
+<li>parametrized types;</li>
+<li>inheritance for both records and sum types;</li>
+<li>abstract types;</li>
+<li>arbitrary annotations.</li>
+</ul>
+<p>ATD by design does not support:</p>
+<ul>
+<li>function types, function signatures or method signatures;</li>
+<li>a syntax to represent values;</li>
+<li>a syntax for submodules.</li>
+</ul>
+<h2 id="language-overview">Language overview</h2>
+<p>ATD was strongly inspired by the type system of ML and OCaml. Such a type system allows static type checking and type inference, properties which contribute to the safety and conciseness of the language.</p>
+<p>Unlike mainstream languages like Java, C++, C# or Python to name a few, languages such as Haskell or OCaml offer sum types, also known as algebraic data types or variant types. These allow to specify that an object is of one kind or another without ever performing dynamic casts.</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* Example of a sum type in ATD. The vertical bar reads `or&#39;. *)</span>
+<span class="kw">type</span> shape = [
+    <span class="dt">Square</span> <span class="kw">of</span> float               <span class="co">(* argument: side length *)</span>
+  | <span class="dt">Rectangle</span> <span class="kw">of</span> (float * float)  <span class="co">(* argument: width and height *)</span>
+  | <span class="dt">Circle</span> <span class="kw">of</span> float               <span class="co">(* argument: radius *)</span>
+  | <span class="dt">Dot</span>                           <span class="co">(* no argument *)</span>
+]</code></pre></div>
+<p>A notable example of sum types is the predefined option type. An object of an option type contains either one value of a given type or nothing. We could define our own <code>int_option</code> type as follows:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> int_option = [ <span class="dt">None</span> | <span class="dt">Some</span> <span class="kw">of</span> <span class="dt">int</span> ]</code></pre></div>
+<p>ATD supports parametrized types also known as generics in Java or templates in C++. We could define our own generic option type as follows:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> &#39;a opt = [ <span class="dt">None</span> | <span class="dt">Some</span> <span class="kw">of</span> &#39;a ]
+  <span class="co">(* &#39;a denotes a type parameter. *)</span>
+
+<span class="kw">type</span> opt_int = <span class="dt">int</span> opt
+  <span class="co">(* equivalent to int_option defined in the previous example *)</span>
+
+<span class="kw">type</span> opt_string = <span class="dt">string</span> opt
+  <span class="co">(* same with string instead of int *)</span></code></pre></div>
+<p>In practice we shall use the predefined option type. The option type is fundamentally different from nullable objects since the latter don't allow values that would have type <code>'a option option</code>.</p>
+<p>ATD also support product types. They come in two forms: tuples and records:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> tuple_example = (<span class="dt">string</span> * <span class="dt">int</span>)
+
+<span class="kw">type</span> record_example = {
+  name : <span class="dt">string</span>;
+  age : <span class="dt">int</span>;
+}</code></pre></div>
+<p>Although tuples in theory are not more expressive than records, they are much more concise and languages that support them natively usually do not require type definitions.</p>
+<p>Finally, ATD supports multiple inheritance which is a simple mechanism for adding fields to records or variants to sum types:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> builtin_color = [
+    <span class="dt">Red</span> | <span class="dt">Green</span> | <span class="dt">Blue</span> | <span class="dt">Yellow</span>
+  | <span class="dt">Purple</span> | <span class="dt">Black</span> | <span class="dt">White</span>
+]
+
+<span class="kw">type</span> rgb = (float * float * float)
+<span class="kw">type</span> cmyk = (float * float * float * float)
+
+<span class="co">(* Inheritance of variants *)</span>
+<span class="kw">type</span> color = [
+    <span class="kw">inherit</span> builtin_color
+  | <span class="dt">Rgb</span> <span class="kw">of</span> rgb
+  | <span class="dt">Cmyk</span> <span class="kw">of</span> cmyk
+]</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> basic_profile = {
+  id : <span class="dt">string</span>;
+  name : <span class="dt">string</span>;
+}
+
+<span class="co">(* Inheritance of record fields *)</span>
+<span class="kw">type</span> full_profile = {
+  <span class="kw">inherit</span> basic_profile;
+  date_of_birth : (<span class="dt">int</span> * <span class="dt">int</span> * <span class="dt">int</span>) <span class="dt">option</span>;
+  street_address1 : <span class="dt">string</span> <span class="dt">option</span>;
+  street_address2 : <span class="dt">string</span> <span class="dt">option</span>;
+  city : <span class="dt">string</span> <span class="dt">option</span>;
+  zip_code : <span class="dt">string</span> <span class="dt">option</span>;
+  state : <span class="dt">string</span> <span class="dt">option</span>;
+}</code></pre></div>
+<h2 id="editing-and-validating-atd-files">Editing and validating ATD files</h2>
+<p>The extension for ATD files is <code>.atd</code>. Editing ATD files is best achieved using an OCaml-friendly editor since the ATD syntax is vastly compatible with OCaml and uses a subset of OCaml's keywords.</p>
+<p>Emacs users can use caml-mode or tuareg-mode to edit ATD files. Adding the following line to the <code>~/.emacs</code> file will automatically use tuareg-mode when opening a file with a <code>.atd</code> extension:</p>
+<div class="sourceCode"><pre class="sourceCode commonlisp"><code class="sourceCode commonlisp">(add-to-list &#39;auto-mode-alist &#39;(<span class="st">&quot;</span>\\<span class="st">.atd</span>\\<span class="st">&#39;&quot;</span> . tuareg-mode))</code></pre></div>
+<p>The syntax of an ATD file can be checked with the program <code>atdcat</code> provided with the OCaml library <code>atd</code>. <code>atdcat</code> pretty-prints its input data, optionally after some transformations such as monomorphization or inheritance. Here is the output of <code>atdcat -help</code>:</p>
+<pre><code>Usage: atdcat FILE
+  -x 
+          make type expressions monomorphic
+  -xk 
+          keep parametrized type definitions and imply -x.
+          Default is to return only monomorphic type definitions
+  -xd 
+          debug mode implying -x
+  -i 
+          expand all `inherit&#39; statements
+  -if 
+          expand `inherit&#39; statements in records
+  -iv 
+          expand `inherit&#39; statements in sum types
+  -ml &lt;name&gt;
+          output the ocaml code of the ATD abstract syntax tree
+  -html-doc 
+          replace directly &lt;doc html=&quot;...&quot;&gt; by (*html ... *)
+          or replace &lt;doc text=&quot;...&quot;&gt; by (*html ... *)
+          where the contents are formatted as HTML
+          using &lt;p&gt;, &lt;code&gt; and &lt;pre&gt;.
+          This is suitable input for &quot;caml2html -ext html:cat&quot;
+          which converts ATD files into HTML.
+  -strip NAME1[,NAME2,...]
+          remove all annotations of the form &lt;NAME1 ...&gt;,
+          &lt;NAME2 ...&gt;, etc.
+  -strip-all 
+          remove all annotations
+  -version 
+          print the version of atd and exit
+  -help  Display this list of options
+  --help  Display this list of options</code></pre>
+<h1 id="atd-language">ATD language</h1>
+<p>This is a precise description of the syntax of the ATD language, not a tutorial.</p>
+<h2 id="notations">Notations</h2>
+<p>Lexical and grammatical rules are expressed using a BNF-like syntax. Graphical terminal symbols use <code>unquoted strings in typewriter font</code>. Non-graphical characters use their official uppercase ASCII name such as LF for the newline character or SPACE for the space character. Non-terminal symbols use the regular font and link to their definition. Parentheses are used for grouping.</p>
+<p>The following postfix operators are used to specify repeats:</p>
+<table>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">x*</td>
+<td style="text-align: left;">0, 1 or more occurrences of x</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">x?</td>
+<td style="text-align: left;">0 or 1 occurrence of x</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">x+</td>
+<td style="text-align: left;">1 or more occurrences of x</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lexical-rules">Lexical rules</h2>
+<p>ATD does not enforce a particular character encoding other than ASCII compatibility. Non-ASCII text and data found in annotations and in comments may contain arbitrary bytes in the non-ASCII range 128-255 without escaping. The UTF-8 encoding is however strongly recommended for all text. The use of hexadecimal or decimal escape sequences is recommended for binary data.</p>
+<p>An ATD lexer splits its input into a stream of tokens, discarding whitespace and comments.</p>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 52%" />
+<col style="width: 25%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">token ::=</td>
+<td style="text-align: left;">keyword</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;">lident</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;">uident</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;">tident</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">ignorable ::=</td>
+<td style="text-align: left;">space</td>
+<td style="text-align: left;"><em>discarded</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;">comment</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">space ::=</td>
+<td style="text-align: left;">SPACE | TAB | CR | LF</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">blank ::=</td>
+<td style="text-align: left;">SPACE | TAB</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">comment ::=</td>
+<td style="text-align: left;"><code>(*</code> (comment | string | byte)* <code>*)</code></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">lident ::=</td>
+<td style="text-align: left;">(lower | <code>_</code> identchar) identchar*</td>
+<td style="text-align: left;"><em>lowercase identifier</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">uident ::=</td>
+<td style="text-align: left;">upper identchar*</td>
+<td style="text-align: left;"><em>uppercase identifier</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">tident ::=</td>
+<td style="text-align: left;"><code>'</code> lident</td>
+<td style="text-align: left;"><em>type parameter</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">lower ::=</td>
+<td style="text-align: left;"><code>a</code>...<code>z</code></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">upper ::=</td>
+<td style="text-align: left;"><code>A</code>...<code>Z</code></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">identchar ::=</td>
+<td style="text-align: left;">upper | lower | digit | <code>_</code> | <code>'</code></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">string ::=</td>
+<td style="text-align: left;"><code>&quot;</code> substring* <code>&quot;</code></td>
+<td style="text-align: left;"><em>string literal, used in annotations</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">substring ::=</td>
+<td style="text-align: left;"><code>\\</code></td>
+<td style="text-align: left;"><em>single backslash</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>\&quot;</code></td>
+<td style="text-align: left;"><em>double quote</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>\x</code> hex hex</td>
+<td style="text-align: left;"><em>single byte in hexadecimal notation</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>\</code> digit digit digit</td>
+<td style="text-align: left;"><em>single byte in decimal notation</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>\n</code></td>
+<td style="text-align: left;"><em>LF</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>\r</code></td>
+<td style="text-align: left;"><em>CR</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>\t</code></td>
+<td style="text-align: left;"><em>TAB</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>\b</code></td>
+<td style="text-align: left;"><em>BS</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>\</code> CR? LF blank*</td>
+<td style="text-align: left;"><em>discarded</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;">not-backslash</td>
+<td style="text-align: left;"><em>any byte except <code>\</code> or <code>&quot;</code></em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">digit ::=</td>
+<td style="text-align: left;"><code>0</code>...<code>9</code></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">hex ::=</td>
+<td style="text-align: left;"><code>0</code>...<code>9</code> | <code>a</code>...<code>f</code> | <code>A</code>...<code>F</code></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">keyword ::=</td>
+<td style="text-align: left;"><code>(</code> | <code>)</code> | <code>[</code> | <code>]</code> |  | <code>\</code>} | <code>&lt;</code> | <code>&gt;</code> &amp; | <code>;</code> | <code>,</code> | <code>:</code> | <code>*</code> | <code>|</code> | <code>=</code> | <code>?</code> | <code>~</code> | <code>type</code> | <code>of</code> | <code>inherit</code></td>
+<td style="text-align: left;"><em>all keywords</em></td>
+</tr>
+</tbody>
+</table>
+<h2 id="grammar">Grammar</h2>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 52%" />
+<col style="width: 25%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">module ::=</td>
+<td style="text-align: left;">annot* typedef*</td>
+<td style="text-align: left;"><em>entry point</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">annot ::=</td>
+<td style="text-align: left;"><code>&lt;</code> lident annot-field* <code>&gt;</code></td>
+<td style="text-align: left;"><em>annotation</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">annot-field ::=</td>
+<td style="text-align: left;">(lident (<code>=</code> string)?)</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">typedef ::=</td>
+<td style="text-align: left;"><code>type</code> params? lident annot <code>=</code> expr</td>
+<td style="text-align: left;"><em>type definition</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">params ::=</td>
+<td style="text-align: left;">tident</td>
+<td style="text-align: left;"><em>one parameter</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>(</code> tident (<code>,</code> tident)+ <code>)</code></td>
+<td style="text-align: left;"><em>two or more parameters</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">expr ::=</td>
+<td style="text-align: left;">expr-body annot*</td>
+<td style="text-align: left;"><em>type expression</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;">tident</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">expr-body ::=</td>
+<td style="text-align: left;">args? lident</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>(</code> (cell (<code>*</code> cell)*)? <code>)</code></td>
+<td style="text-align: left;"><em>tuple type</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>{</code> ((field (<code>;</code> field)*) <code>;</code>?)? <code>}</code></td>
+<td style="text-align: left;"><em>record type</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>[</code> (<code>|</code>? variant (<code>|</code> variant)*)? <code>]</code></td>
+<td style="text-align: left;"><em>sum type</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">args ::=</td>
+<td style="text-align: left;">expr</td>
+<td style="text-align: left;"><em>one argument</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>(</code> expr (<code>,</code> expr)+ <code>)</code></td>
+<td style="text-align: left;"><em>two or more arguments</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">cell ::=</td>
+<td style="text-align: left;">(annot+ <code>:</code>)? expr</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">field ::=</td>
+<td style="text-align: left;">(<code>?</code> | <code>~</code>)? lident <code>=</code> expr</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>inherit</code> expr</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">variant ::=</td>
+<td style="text-align: left;">uident annot* <code>of</code> expr</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;">uident annot*</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">|</td>
+<td style="text-align: left;"><code>inherit</code> expr</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<h2 id="predefined-type-names">Predefined type names</h2>
+<p>The following types are considered predefined and may not be redefined.</p>
+<table>
+<colgroup>
+<col style="width: 24%" />
+<col style="width: 75%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Type name</th>
+<th style="text-align: left;">Intended use</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>unit</code></td>
+<td style="text-align: left;">Type of just one value, useful with parametrized types</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;">Boolean</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>int</code></td>
+<td style="text-align: left;">Integer</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>float</code></td>
+<td style="text-align: left;">Floating-point number</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>string</code></td>
+<td style="text-align: left;">Sequence of bytes or characters</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>'a option</code></td>
+<td style="text-align: left;">Container of zero or one element of type <code>'a</code>. See also <code>'a nullable</code>.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>'a list</code></td>
+<td style="text-align: left;">Collection or sequence of elements of type <code>'a</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>'a nullable</code></td>
+<td style="text-align: left;">Extend type <code>'a</code> with an extra conventional value, typically called &quot;null&quot;. The operation is idempotent, i.e. <code>'a nullable</code> is equivalent to <code>'a nullable nullable</code>.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>'a shared</code></td>
+<td style="text-align: left;">Values of type <code>'a</code> for which sharing must be preserved</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>'a wrap</code></td>
+<td style="text-align: left;">Values on which a custom, reversible transformation may be applied, as specified by language-specific annotations.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>abstract</code></td>
+<td style="text-align: left;">Type defined elsewhere</td>
+</tr>
+</tbody>
+</table>
+<h2 id="shared-values">Shared values</h2>
+<p>ATD supports a special type <span class="math inline"><em>x</em></span> <code>shared</code> where <span class="math inline"><em>x</em></span> can be any monomorphic type expression. It allows notably to represent cyclic values and to enforce that cycles are preserved during transformations such as serialization.</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* Example of a simple graph type *)</span>
+<span class="kw">type</span> shared_node = node shared <span class="co">(* sharing point *)</span>
+<span class="kw">type</span> graph = shared_node <span class="dt">list</span>
+<span class="kw">type</span> node = {
+  label : <span class="dt">string</span>;
+  neighbors : shared_node <span class="dt">list</span>;
+}</code></pre></div>
+<p>Two shared values that are physically identical must remain physically identical after any translation from one data format to another.</p>
+<p>Each occurrence of a <code>shared</code> type expression in the ATD source definition defines its own sharing point. Therefore the following attempt at defining a graph type will not preserve cycles because two sharing points are defined:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* Incorrect definition of a graph type *)</span>
+<span class="kw">type</span> node = {
+  label : <span class="dt">string</span>;
+  neighbors : node shared <span class="co">(* sharing point 1 *)</span> <span class="dt">list</span>;
+}
+
+<span class="co">(* Second occurrence of &quot;shared&quot;, won&#39;t preserve cycles! *)</span>
+<span class="kw">type</span> graph = node shared <span class="co">(* sharing point 2 *)</span> <span class="dt">list</span></code></pre></div>
+<p>There is actually a way of having multiple <code>shared</code> type expressions using the same sharing point but this feature is designed for code generators and should not be used in handwritten ATD definitions. The technique consists in providing an annotation of the form <code>&lt;share id=</code><em>x</em><code>&gt;</code> where <em>x</em> is any string identifying the sharing point. The graph example can be rewritten correctly as:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> node = {
+  label : <span class="dt">string</span>;
+  neighbors : node shared &lt;share id=<span class="st">&quot;1&quot;</span>&gt; <span class="dt">list</span>;
+}
+
+<span class="kw">type</span> graph = node shared &lt;share id=<span class="st">&quot;1&quot;</span>&gt; <span class="dt">list</span></code></pre></div>
+<h1 id="see-also">See also</h1>
+<p><a href="atdgen" class="uri">atdgen</a>(1)</p>
+</body>
+</html>

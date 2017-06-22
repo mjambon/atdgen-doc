@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="June 21, 2017">
+  <title>atdgen(1) user manual</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" href="atdgen.css">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header>
+<h1 class="title">atdgen(1) user manual</h1>
+<h2 class="author">June 21, 2017</h2>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#name">Name</a></li>
+<li><a href="#synopsis">Synopsis</a></li>
+<li><a href="#description">Description</a></li>
+<li><a href="#command-line-usage">Command-line usage</a><ul>
+<li><a href="#command-line-help">Command-line help</a></li>
+<li><a href="#atdgen-json-example">Atdgen-json example</a></li>
+<li><a href="#atdgen-biniou-example">Atdgen-biniou example</a></li>
+<li><a href="#validator-example">Validator example</a></li>
+</ul></li>
+<li><a href="#default-type-mapping">Default type mapping</a></li>
+<li><a href="#atd-annotations">ATD Annotations</a><ul>
+<li><a href="#section-json">Section '<code>json</code>'</a><ul>
+<li><a href="#field-keep_nulls">Field '<code>keep_nulls</code>'</a></li>
+<li><a href="#field-name">Field '<code>name</code>'</a></li>
+<li><a href="#field-repr">Field '<code>repr</code>'</a></li>
+<li><a href="#field-tag_field">Field '<code>tag_field</code>'</a></li>
+<li><a href="#field-untyped">Field '<code>untyped</code>'</a></li>
+</ul></li>
+<li><a href="#section-biniou">Section '<code>biniou</code>'</a><ul>
+<li><a href="#field-repr-1">Field '<code>repr</code>'</a></li>
+</ul></li>
+<li><a href="#section-ocaml">Section '<code>ocaml</code>'</a><ul>
+<li><a href="#field-predef">Field '<code>predef</code>'</a></li>
+<li><a href="#field-mutable">Field '<code>mutable</code>'</a></li>
+<li><a href="#field-default">Field '<code>default</code>'</a></li>
+<li><a href="#field-from">Field '<code>from</code>'</a></li>
+<li><a href="#field-module">Field '<code>module</code>'</a></li>
+<li><a href="#field-t">Field '<code>t</code>'</a></li>
+<li><a href="#fields-wrap-and-unwrap">Fields '<code>wrap</code>' and '<code>unwrap</code>'</a></li>
+<li><a href="#field-field_prefix">Field '<code>field_prefix</code>'</a></li>
+<li><a href="#field-name-1">Field '<code>name</code>'</a></li>
+<li><a href="#field-repr-2">Field '<code>repr</code>'</a></li>
+<li><a href="#field-valid">Field '<code>valid</code>'</a></li>
+<li><a href="#field-validator">Field '<code>validator</code>'</a></li>
+</ul></li>
+<li><a href="#section-ocaml_biniou">Section '<code>ocaml_biniou</code>'</a></li>
+<li><a href="#section-ocaml_json-obsolete">Section '<code>ocaml_json</code>' (obsolete)</a></li>
+<li><a href="#section-doc">Section '<code>doc</code>'</a><ul>
+<li><a href="#field-text">Field '<code>text</code>'</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#library">Library</a></li>
+<li><a href="#see-also">See also</a></li>
+</ul>
+</nav>
+<p><a href="https://mjambon.github.io/atdgen-doc/">Home</a></p>
+<h1 id="name">Name</h1>
+<p>atdgen - derive code from type definitions</p>
+<h1 id="synopsis">Synopsis</h1>
+<p>atdgen <strong>-t</strong> [<em>infile</em><strong>.atd</strong>] [<em>options</em>...]</p>
+<p>atdgen <strong>-j</strong> <strong>-j-std</strong> [<em>infile</em><strong>.atd</strong>] [<em>options</em>...]</p>
+<p>atdgen <strong>-b</strong> [<em>infile</em><strong>.atd</strong>] [<em>options</em>...]</p>
+<p>atdgen <strong>-v</strong> [<em>infile</em><strong>.atd</strong>] [<em>options</em>...]</p>
+<p>atdgen [<em>mode</em>] [<em>options</em>...]</p>
+<p>atdgen <strong>-help</strong></p>
+<h1 id="description">Description</h1>
+<p>Atdgen is a command-line program that takes as input type definitions in the <a href="http://mjambon.com/atd">ATD syntax</a> and produces OCaml code suitable for data serialization and deserialization.</p>
+<p>Two data formats are currently supported, these are <a href="http://json.org/">JSON</a> and <a href="http://mjambon.com/biniou.html">biniou</a>, a binary format with extensibility properties similar to JSON. Atdgen-json and Atdgen-biniou will refer to Atdgen used in one context or the other.</p>
+<p>Atdgen was designed with efficiency and durability in mind. Software authors are encouraged to use Atdgen directly and to write tools that may reuse part of Atdgen's source code.</p>
+<p>Atdgen uses the following packages that were developed in conjunction with Atdgen:</p>
+<ul>
+<li><code>atd</code>: parser for the syntax of type definitions</li>
+<li><code>biniou</code>: parser and printer for biniou, a binary extensible data format</li>
+<li><a href="http://mjambon.com/yojson.html"><code>yojson</code></a>: parser and printer for JSON, a widespread text-based data format</li>
+</ul>
+<h1 id="command-line-usage">Command-line usage</h1>
+<h2 id="command-line-help">Command-line help</h2>
+<p>Call <code>atdgen -help</code> for the full list of available options.</p>
+<h2 id="atdgen-json-example">Atdgen-json example</h2>
+<pre><code>$ atdgen -t example.atd
+$ atdgen -j -j-std example.atd</code></pre>
+<p>Input file <code>example.atd</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> profile = {
+  id : <span class="dt">string</span>;
+  email : <span class="dt">string</span>;
+  ~email_validated : <span class="dt">bool</span>;
+  name : <span class="dt">string</span>;
+  ?real_name : <span class="dt">string</span> <span class="dt">option</span>;
+  ~about_me : <span class="dt">string</span> <span class="dt">list</span>;
+  ?gender : gender <span class="dt">option</span>;
+  ?date_of_birth : date <span class="dt">option</span>;
+}
+
+<span class="kw">type</span> gender = [ <span class="dt">Female</span> | <span class="dt">Male</span> ]
+
+<span class="kw">type</span> date = {
+  year : <span class="dt">int</span>;
+  month : <span class="dt">int</span>;
+  day : <span class="dt">int</span>;
+}</code></pre></div>
+<p>is used to produce files <code>example_t.mli</code>, <code>example_t.ml</code>, <code>example_j.mli</code> and <code>example_j.ml</code>. This is <code>example_j.mli</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* Auto-generated from &quot;example.atd&quot; *)</span>
+
+
+<span class="kw">type</span> gender = Example_t<span class="kw">.</span>gender
+
+<span class="kw">type</span> date = Example_t<span class="kw">.</span>date = { year: <span class="dt">int</span>; month: <span class="dt">int</span>; day: <span class="dt">int</span> }
+
+<span class="kw">type</span> profile = Example_t<span class="kw">.</span>profile = {
+  id: <span class="dt">string</span>;
+  email: <span class="dt">string</span>;
+  email_validated: <span class="dt">bool</span>;
+  name: <span class="dt">string</span>;
+  real_name: <span class="dt">string</span> <span class="dt">option</span>;
+  about_me: <span class="dt">string</span> <span class="dt">list</span>;
+  gender: gender <span class="dt">option</span>;
+  date_of_birth: date <span class="dt">option</span>
+}
+
+<span class="kw">val</span> write_gender :
+  Bi_outbuf<span class="kw">.</span>t -&gt; gender -&gt; <span class="dt">unit</span>
+  <span class="co">(** Output a JSON value of type {!gender}. *)</span>
+
+<span class="kw">val</span> string_of_gender :
+  ?len:<span class="dt">int</span> -&gt; gender -&gt; <span class="dt">string</span>
+  <span class="co">(** Serialize a value of type {!gender}</span>
+<span class="co">      into a JSON string.</span>
+<span class="co">      @param len specifies the initial length</span>
+<span class="co">                 of the buffer used internally.</span>
+<span class="co">                 Default: 1024. *)</span>
+
+<span class="kw">val</span> read_gender :
+  Yojson<span class="kw">.</span>Safe<span class="kw">.</span>lexer_state -&gt; Lexing<span class="kw">.</span>lexbuf -&gt; gender
+  <span class="co">(** Input JSON data of type {!gender}. *)</span>
+
+<span class="kw">val</span> gender_of_string :
+  <span class="dt">string</span> -&gt; gender
+  <span class="co">(** Deserialize JSON data of type {!gender}. *)</span>
+
+<span class="kw">val</span> write_date :
+  Bi_outbuf<span class="kw">.</span>t -&gt; date -&gt; <span class="dt">unit</span>
+  <span class="co">(** Output a JSON value of type {!date}. *)</span>
+
+<span class="kw">val</span> string_of_date :
+  ?len:<span class="dt">int</span> -&gt; date -&gt; <span class="dt">string</span>
+  <span class="co">(** Serialize a value of type {!date}</span>
+<span class="co">      into a JSON string.</span>
+<span class="co">      @param len specifies the initial length</span>
+<span class="co">                 of the buffer used internally.</span>
+<span class="co">                 Default: 1024. *)</span>
+
+<span class="kw">val</span> read_date :
+  Yojson<span class="kw">.</span>Safe<span class="kw">.</span>lexer_state -&gt; Lexing<span class="kw">.</span>lexbuf -&gt; date
+  <span class="co">(** Input JSON data of type {!date}. *)</span>
+
+<span class="kw">val</span> date_of_string :
+  <span class="dt">string</span> -&gt; date
+  <span class="co">(** Deserialize JSON data of type {!date}. *)</span>
+
+<span class="kw">val</span> write_profile :
+  Bi_outbuf<span class="kw">.</span>t -&gt; profile -&gt; <span class="dt">unit</span>
+  <span class="co">(** Output a JSON value of type {!profile}. *)</span>
+
+<span class="kw">val</span> string_of_profile :
+  ?len:<span class="dt">int</span> -&gt; profile -&gt; <span class="dt">string</span>
+  <span class="co">(** Serialize a value of type {!profile}</span>
+<span class="co">      into a JSON string.</span>
+<span class="co">      @param len specifies the initial length</span>
+<span class="co">                 of the buffer used internally.</span>
+<span class="co">                 Default: 1024. *)</span>
+
+<span class="kw">val</span> read_profile :
+  Yojson<span class="kw">.</span>Safe<span class="kw">.</span>lexer_state -&gt; Lexing<span class="kw">.</span>lexbuf -&gt; profile
+  <span class="co">(** Input JSON data of type {!profile}. *)</span>
+
+<span class="kw">val</span> profile_of_string :
+  <span class="dt">string</span> -&gt; profile
+  <span class="co">(** Deserialize JSON data of type {!profile}. *)</span></code></pre></div>
+<p>Module <code>Example_t</code> (files <code>example_t.mli</code> and <code>example_t.ml</code>) contains all OCaml type definitions that can be used independently from Biniou or JSON.</p>
+<p>For convenience, these definitions are also made available from the <code>Example_j</code> module whose interface is shown above. Any type name, record field name or variant constructor can be referred to using either module. For example, the OCaml expressions <code>((x : Example_t.date) : Example_j.date)</code> and <code>x.Example_t.year = x.Example_j.year</code> are both valid.</p>
+<h2 id="atdgen-biniou-example">Atdgen-biniou example</h2>
+<pre><code>$ atdgen -t example.atd
+$ atdgen -b example.atd</code></pre>
+<p>Input file <code>example.atd</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> profile = {
+  id : <span class="dt">string</span>;
+  email : <span class="dt">string</span>;
+  ~email_validated : <span class="dt">bool</span>;
+  name : <span class="dt">string</span>;
+  ?real_name : <span class="dt">string</span> <span class="dt">option</span>;
+  ~about_me : <span class="dt">string</span> <span class="dt">list</span>;
+  ?gender : gender <span class="dt">option</span>;
+  ?date_of_birth : date <span class="dt">option</span>;
+}
+
+<span class="kw">type</span> gender = [ <span class="dt">Female</span> | <span class="dt">Male</span> ]
+
+<span class="kw">type</span> date = {
+  year : <span class="dt">int</span>;
+  month : <span class="dt">int</span>;
+  day : <span class="dt">int</span>;
+}</code></pre></div>
+<p>is used to produce files <code>example_t.mli</code>, <code>example_t.ml</code>, <code>example_b.mli</code> and <code>example_b.ml</code>.</p>
+<p>This is <code>example_b.mli</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* Auto-generated from &quot;example.atd&quot; *)</span>
+
+
+<span class="kw">type</span> gender = Example_t<span class="kw">.</span>gender
+
+<span class="kw">type</span> date = Example_t<span class="kw">.</span>date = { year: <span class="dt">int</span>; month: <span class="dt">int</span>; day: <span class="dt">int</span> }
+
+<span class="kw">type</span> profile = Example_t<span class="kw">.</span>profile = {
+  id: <span class="dt">string</span>;
+  email: <span class="dt">string</span>;
+  email_validated: <span class="dt">bool</span>;
+  name: <span class="dt">string</span>;
+  real_name: <span class="dt">string</span> <span class="dt">option</span>;
+  about_me: <span class="dt">string</span> <span class="dt">list</span>;
+  gender: gender <span class="dt">option</span>;
+  date_of_birth: date <span class="dt">option</span>
+}
+
+<span class="co">(* Writers for type gender *)</span>
+
+<span class="kw">val</span> gender_tag : Bi_io<span class="kw">.</span>node_tag
+  <span class="co">(** Tag used by the writers for type {!gender}.</span>
+<span class="co">      Readers may support more than just this tag. *)</span>
+
+<span class="kw">val</span> write_untagged_gender :
+  Bi_outbuf<span class="kw">.</span>t -&gt; gender -&gt; <span class="dt">unit</span>
+  <span class="co">(** Output an untagged biniou value of type {!gender}. *)</span>
+
+<span class="kw">val</span> write_gender :
+  Bi_outbuf<span class="kw">.</span>t -&gt; gender -&gt; <span class="dt">unit</span>
+  <span class="co">(** Output a biniou value of type {!gender}. *)</span>
+
+<span class="kw">val</span> string_of_gender :
+  ?len:<span class="dt">int</span> -&gt; gender -&gt; <span class="dt">string</span>
+  <span class="co">(** Serialize a value of type {!gender} into</span>
+<span class="co">      a biniou string. *)</span>
+
+<span class="co">(* Readers for type gender *)</span>
+
+<span class="kw">val</span> get_gender_reader :
+  Bi_io<span class="kw">.</span>node_tag -&gt; (Bi_inbuf<span class="kw">.</span>t -&gt; gender)
+  <span class="co">(** Return a function that reads an untagged</span>
+<span class="co">      biniou value of type {!gender}. *)</span>
+
+<span class="kw">val</span> read_gender :
+  Bi_inbuf<span class="kw">.</span>t -&gt; gender
+  <span class="co">(** Input a tagged biniou value of type {!gender}. *)</span>
+
+<span class="kw">val</span> gender_of_string :
+  ?pos:<span class="dt">int</span> -&gt; <span class="dt">string</span> -&gt; gender
+  <span class="co">(** Deserialize a biniou value of type {!gender}.</span>
+<span class="co">      @param pos specifies the position where</span>
+<span class="co">                 reading starts. Default: 0. *)</span>
+
+<span class="co">(* Writers for type date *)</span>
+
+<span class="kw">val</span> date_tag : Bi_io<span class="kw">.</span>node_tag
+  <span class="co">(** Tag used by the writers for type {!date}.</span>
+<span class="co">      Readers may support more than just this tag. *)</span>
+
+<span class="kw">val</span> write_untagged_date :
+  Bi_outbuf<span class="kw">.</span>t -&gt; date -&gt; <span class="dt">unit</span>
+  <span class="co">(** Output an untagged biniou value of type {!date}. *)</span>
+
+<span class="kw">val</span> write_date :
+  Bi_outbuf<span class="kw">.</span>t -&gt; date -&gt; <span class="dt">unit</span>
+  <span class="co">(** Output a biniou value of type {!date}. *)</span>
+
+<span class="kw">val</span> string_of_date :
+  ?len:<span class="dt">int</span> -&gt; date -&gt; <span class="dt">string</span>
+  <span class="co">(** Serialize a value of type {!date} into</span>
+<span class="co">      a biniou string. *)</span>
+
+<span class="co">(* Readers for type date *)</span>
+
+<span class="kw">val</span> get_date_reader :
+  Bi_io<span class="kw">.</span>node_tag -&gt; (Bi_inbuf<span class="kw">.</span>t -&gt; date)
+  <span class="co">(** Return a function that reads an untagged</span>
+<span class="co">      biniou value of type {!date}. *)</span>
+
+<span class="kw">val</span> read_date :
+  Bi_inbuf<span class="kw">.</span>t -&gt; date
+  <span class="co">(** Input a tagged biniou value of type {!date}. *)</span>
+
+<span class="kw">val</span> date_of_string :
+  ?pos:<span class="dt">int</span> -&gt; <span class="dt">string</span> -&gt; date
+  <span class="co">(** Deserialize a biniou value of type {!date}.</span>
+<span class="co">      @param pos specifies the position where</span>
+<span class="co">                 reading starts. Default: 0. *)</span>
+
+<span class="co">(* Writers for type profile *)</span>
+
+<span class="kw">val</span> profile_tag : Bi_io<span class="kw">.</span>node_tag
+  <span class="co">(** Tag used by the writers for type {!profile}.</span>
+<span class="co">      Readers may support more than just this tag. *)</span>
+
+<span class="kw">val</span> write_untagged_profile :
+  Bi_outbuf<span class="kw">.</span>t -&gt; profile -&gt; <span class="dt">unit</span>
+  <span class="co">(** Output an untagged biniou value of type {!profile}. *)</span>
+
+<span class="kw">val</span> write_profile :
+  Bi_outbuf<span class="kw">.</span>t -&gt; profile -&gt; <span class="dt">unit</span>
+  <span class="co">(** Output a biniou value of type {!profile}. *)</span>
+
+<span class="kw">val</span> string_of_profile :
+  ?len:<span class="dt">int</span> -&gt; profile -&gt; <span class="dt">string</span>
+  <span class="co">(** Serialize a value of type {!profile} into</span>
+<span class="co">      a biniou string. *)</span>
+
+<span class="co">(* Readers for type profile *)</span>
+
+<span class="kw">val</span> get_profile_reader :
+  Bi_io<span class="kw">.</span>node_tag -&gt; (Bi_inbuf<span class="kw">.</span>t -&gt; profile)
+  <span class="co">(** Return a function that reads an untagged</span>
+<span class="co">      biniou value of type {!profile}. *)</span>
+
+<span class="kw">val</span> read_profile :
+  Bi_inbuf<span class="kw">.</span>t -&gt; profile
+  <span class="co">(** Input a tagged biniou value of type {!profile}. *)</span>
+
+<span class="kw">val</span> profile_of_string :
+  ?pos:<span class="dt">int</span> -&gt; <span class="dt">string</span> -&gt; profile
+  <span class="co">(** Deserialize a biniou value of type {!profile}.</span>
+<span class="co">      @param pos specifies the position where</span>
+<span class="co">                 reading starts. Default: 0. *)</span></code></pre></div>
+<p>Module <code>Example_t</code> (files <code>example_t.mli</code> and <code>example_t.ml</code>) contains all OCaml type definitions that can be used independently from Biniou or JSON.</p>
+<p>For convenience, these definitions are also made available from the <code>Example_b</code> module whose interface is shown above. Any type name, record field name or variant constructor can be referred to using either module. For example, the OCaml expressions <code>((x : Example_t.date) : Example_b.date)</code> and <code>x.Example_t.year = x.Example_b.year</code> are both valid.</p>
+<h2 id="validator-example">Validator example</h2>
+<pre><code>$ atdgen -t example.atd
+$ atdgen -v example.atd</code></pre>
+<p>Input file <code>example.atd</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> month = <span class="dt">int</span> &lt;ocaml valid=<span class="st">&quot;fun x -&gt; x &gt;= 1 &amp;&amp; x &lt;= 12&quot;</span>&gt;
+<span class="kw">type</span> day = <span class="dt">int</span> &lt;ocaml valid=<span class="st">&quot;fun x -&gt; x &gt;= 1 &amp;&amp; x &lt;= 31&quot;</span>&gt;
+
+<span class="kw">type</span> date = {
+  year : <span class="dt">int</span>;
+  month : month;
+  day : day;
+}
+  &lt;ocaml validator=<span class="st">&quot;Date_util.validate_date&quot;</span>&gt;</code></pre></div>
+<p>is used to produce files <code>example_t.mli</code>, <code>example_t.ml</code>, <code>example_v.mli</code> and <code>example_v.ml</code>. This is <code>example_v.ml</code>, showing how the user-specified validators are used:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* Auto-generated from &quot;example.atd&quot; *)</span>
+
+
+<span class="kw">type</span> gender = Example_t<span class="kw">.</span>gender
+
+<span class="kw">type</span> date = Example_t<span class="kw">.</span>date = { year: <span class="dt">int</span>; month: <span class="dt">int</span>; day: <span class="dt">int</span> }
+
+<span class="kw">type</span> profile = Example_t<span class="kw">.</span>profile = {
+  id: <span class="dt">string</span>;
+  email: <span class="dt">string</span>;
+  email_validated: <span class="dt">bool</span>;
+  name: <span class="dt">string</span>;
+  real_name: <span class="dt">string</span> <span class="dt">option</span>;
+  about_me: <span class="dt">string</span> <span class="dt">list</span>;
+  gender: gender <span class="dt">option</span>;
+  date_of_birth: date <span class="dt">option</span>
+}
+
+<span class="kw">val</span> validate_gender :
+  Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; gender -&gt; Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span>
+  <span class="co">(** Validate a value of type {!gender}. *)</span>
+
+<span class="kw">val</span> create_date :
+  year: <span class="dt">int</span> -&gt;
+  month: <span class="dt">int</span> -&gt;
+  day: <span class="dt">int</span> -&gt;
+  <span class="dt">unit</span> -&gt; date
+  <span class="co">(** Create a record of type {!date}. *)</span>
+
+<span class="kw">val</span> validate_date :
+  Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; date -&gt; Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span>
+  <span class="co">(** Validate a value of type {!date}. *)</span>
+
+<span class="kw">val</span> create_profile :
+  id: <span class="dt">string</span> -&gt;
+  email: <span class="dt">string</span> -&gt;
+  ?email_validated: <span class="dt">bool</span> -&gt;
+  name: <span class="dt">string</span> -&gt;
+  ?real_name: <span class="dt">string</span> -&gt;
+  ?about_me: <span class="dt">string</span> <span class="dt">list</span> -&gt;
+  ?gender: gender -&gt;
+  ?date_of_birth: date -&gt;
+  <span class="dt">unit</span> -&gt; profile
+  <span class="co">(** Create a record of type {!profile}. *)</span>
+
+<span class="kw">val</span> validate_profile :
+  Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; profile -&gt; Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span>
+  <span class="co">(** Validate a value of type {!profile}. *)</span></code></pre></div>
+<h1 id="default-type-mapping">Default type mapping</h1>
+<p>The following table summarizes the default mapping between ATD types and OCaml, biniou and JSON data types. For each language more representations are available and are detailed in the next section of this manual.</p>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 27%" />
+<col style="width: 24%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">ATD</th>
+<th style="text-align: left;">OCaml</th>
+<th style="text-align: left;">JSON</th>
+<th style="text-align: left;">Biniou</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>unit</code></td>
+<td style="text-align: left;"><code>unit</code></td>
+<td style="text-align: left;">null</td>
+<td style="text-align: left;">unit</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;">bool</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>int</code></td>
+<td style="text-align: left;"><code>int</code></td>
+<td style="text-align: left;">-?(0|[1-9][0-9]*)</td>
+<td style="text-align: left;">svint</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>float</code></td>
+<td style="text-align: left;"><code>float</code></td>
+<td style="text-align: left;">number</td>
+<td style="text-align: left;">float64</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>string</code></td>
+<td style="text-align: left;"><code>string</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">string</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>'a option</code></td>
+<td style="text-align: left;"><code>'a option</code></td>
+<td style="text-align: left;"><code>&quot;None&quot;</code> or <code>[&quot;Some&quot;, ...]</code></td>
+<td style="text-align: left;">numeric variants (tag 0)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>'a nullable</code></td>
+<td style="text-align: left;"><code>'a option</code></td>
+<td style="text-align: left;"><code>null</code> or representation of <code>'a</code></td>
+<td style="text-align: left;">numeric variants (tag 0)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>'a list</code></td>
+<td style="text-align: left;"><code>'a list</code></td>
+<td style="text-align: left;">array</td>
+<td style="text-align: left;">array</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>'a shared</code></td>
+<td style="text-align: left;">no wrapping</td>
+<td style="text-align: left;">not implemented</td>
+<td style="text-align: left;">no longer supported</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>'a wrap</code></td>
+<td style="text-align: left;">defined by annotation, converted from <code>'a</code></td>
+<td style="text-align: left;">representation of <code>'a</code></td>
+<td style="text-align: left;">representation of <code>'a</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">variants</td>
+<td style="text-align: left;">polymorphic variants</td>
+<td style="text-align: left;">variants</td>
+<td style="text-align: left;">regular variants</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">record</td>
+<td style="text-align: left;">record</td>
+<td style="text-align: left;">object</td>
+<td style="text-align: left;">record</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>('a * 'b)</code></td>
+<td style="text-align: left;"><code>('a * 'b)</code></td>
+<td style="text-align: left;">array</td>
+<td style="text-align: left;">tuple</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>('a)</code></td>
+<td style="text-align: left;"><code>'a</code></td>
+<td style="text-align: left;">array</td>
+<td style="text-align: left;">tuple</td>
+</tr>
+</tbody>
+</table>
+<p>Notes:</p>
+<ul>
+<li>Null JSON fields by default are treated as if the field was missing. They can be made meaningful with the <code>keep_nulls</code> flag.</li>
+<li>JSON nulls are used to represent the unit value and is useful for instanciating parametrized types with &quot;nothing&quot;.</li>
+<li>OCaml floats are written to JSON numbers with either a decimal point or an exponent such that they are distinguishable from ints, even though the JSON standard does not require a distinction between the two.</li>
+<li>The optional values of record fields denoted in ATD by a question mark are unwrapped or omitted in both biniou and JSON.</li>
+<li>JSON option values and JSON variants are represented in standard JSON (<code>atdgen -j -j-std</code>) by a single string e.g. <code>&quot;None&quot;</code> or a pair in which the first element is the name (constructor) e.g. <code>[&quot;Some&quot;, 1234]</code>. Yojson also provides a specific syntax for variants using edgy brackets: <code>&lt;&quot;None&quot;&gt;</code>, <code>&lt;&quot;Some&quot;: 1234&gt;</code>.</li>
+<li>Biniou field names and variant names other than the option types use the hash of the ATD field or variant name and cannot currently be overridden by annotations.</li>
+<li>JSON tuples in standard JSON (<code>atdgen -j -j-std</code>) use the array notation e.g. <code>[&quot;ABC&quot;, 123]</code>. Yojson also provides a specific syntax for tuples using parentheses, e.g. <code>(&quot;ABC&quot;, 123)</code>.</li>
+<li>Types defined as abstractare defined in another module.</li>
+</ul>
+<h1 id="atd-annotations">ATD Annotations</h1>
+<h2 id="section-json">Section '<code>json</code>'</h2>
+<h3 id="field-keep_nulls">Field '<code>keep_nulls</code>'</h3>
+<p>Position: after record</p>
+<p>Values: none, <code>true</code> or <code>false</code></p>
+<p>Semantics: this flag, if present or set to true, indicates that fields whose JSON value is <code>null</code> should not be treated as if they were missing. In this case, <code>null</code> is parsed as a normal value, possibly of a <code>nullable</code> type.</p>
+<p>Example: patch semantics</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* Type of the objects stored in our database *)</span>
+<span class="kw">type</span> t = {
+  ?x : <span class="dt">int</span> <span class="dt">option</span>;
+  ?y : <span class="dt">int</span> <span class="dt">option</span>;
+  ?z : <span class="dt">int</span> <span class="dt">option</span>;
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* Type of the requests to modify some of the fields of an object. *)</span>
+<span class="kw">type</span> t_patch = {
+  ?x : <span class="dt">int</span> nullable <span class="dt">option</span>; <span class="co">(* OCaml type: int option option *)</span>
+  ?y : <span class="dt">int</span> nullable <span class="dt">option</span>;
+  ?z : <span class="dt">int</span> nullable <span class="dt">option</span>;
+} &lt;ocaml field_prefix=<span class="st">&quot;patch_&quot;</span>&gt; &lt;json keep_nulls&gt;</code></pre></div>
+<p>Let's consider the following json patch that means &quot;set <code>x</code> to 1, clear <code>y</code> and keep <code>z</code> as it is&quot;:</p>
+<pre><code>{
+  &quot;x&quot;: 1,
+  &quot;y&quot;: null
+}</code></pre>
+<p>It will be parsed by the generated function <code>t_patch_of_string</code> into the following OCaml value:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml">{
+  patch_x = <span class="dt">Some</span> (<span class="dt">Some</span> <span class="dv">1</span>);
+  patch_y = <span class="dt">Some</span> <span class="dt">None</span>;
+  patch_z = <span class="dt">None</span>;
+}</code></pre></div>
+<p>Then presumably some code would be written to apply the patch to an object of type <code>t</code>. Such code is not generated by atdgen at this time.</p>
+<p>Available: from atd 1.12</p>
+<h3 id="field-name">Field '<code>name</code>'</h3>
+<p>Position: after field name or variant name</p>
+<p>Values: any string making a valid JSON string value</p>
+<p>Semantics: specifies an alternate object field name or variant name to be used by the JSON representation.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> color = [
+    <span class="dt">Black</span> &lt;json name=<span class="st">&quot;black&quot;</span>&gt;
+  | <span class="dt">White</span> &lt;json name=<span class="st">&quot;white&quot;</span>&gt;
+  | <span class="dt">Grey</span> &lt;json name=<span class="st">&quot;grey&quot;</span>&gt;
+]
+
+<span class="kw">type</span> profile = {
+  id &lt;json name=<span class="st">&quot;ID&quot;</span>&gt; : <span class="dt">int</span>;
+  username : <span class="dt">string</span>;
+  background_color : color;
+}</code></pre></div>
+<p>A valid JSON object of the <code>profile</code> type above is:</p>
+<pre><code>{
+  &quot;ID&quot;: 12345678,
+  &quot;username&quot;: &quot;kimforever&quot;,
+  &quot;background_color&quot;: &quot;black&quot;
+}</code></pre>
+<h3 id="field-repr">Field '<code>repr</code>'</h3>
+<h4 id="association-lists">Association lists</h4>
+<p>Position: after <code>(string * _) list</code> type</p>
+<p>Values: <code>object</code></p>
+<p>Semantics: uses JSON's object notation to represent association lists.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> counts = (<span class="dt">string</span> * <span class="dt">int</span>) <span class="dt">list</span> &lt;json repr=<span class="st">&quot;object&quot;</span>&gt;</code></pre></div>
+<p>A valid JSON object of the <code>counts</code> type above is:</p>
+<pre><code>{
+  &quot;bob&quot;: 3,
+  &quot;john&quot;: 1408,
+  &quot;mary&quot;: 450987,
+  &quot;peter&quot;: 93087
+}</code></pre>
+<p>Without the annotation <code>&lt;json repr=&quot;object&quot;&gt;</code>, the data above would be represented as:</p>
+<pre><code>[
+  [ &quot;bob&quot;, 3 ],
+  [ &quot;john&quot;, 1408 ],
+  [ &quot;mary&quot;, 450987 ],
+  [ &quot;peter&quot;, 93087 ]
+]</code></pre>
+<h4 id="floats">Floats</h4>
+<p>Position: after <code>float</code> type</p>
+<p>Values: <code>int</code></p>
+<p>Semantics: specifies a float value that must be rounded to the nearest integer and represented in JSON without a decimal point nor an exponent.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> unixtime = float &lt;json repr=<span class="st">&quot;int&quot;</span>&gt;</code></pre></div>
+<h3 id="field-tag_field">Field '<code>tag_field</code>'</h3>
+<p>This feature makes it possible to read JSON objects representing variants that use one field for the tag and another field for the untagged value of the specific type associated with that tag.</p>
+<p>Position: on a record field name, for a field holding a variant type.</p>
+<p>Value: name of another JSON field which holds the string representing the constructor for the variant.</p>
+<p>Semantics: The type definition</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = {
+  value &lt;json tag_field=<span class="st">&quot;kind&quot;</span>&gt;: [ <span class="dt">A</span> | <span class="dt">B</span> &lt;json name=<span class="st">&quot;b&quot;</span>&gt; <span class="kw">of</span> <span class="dt">int</span> ];
+}</code></pre></div>
+<p>covers JSON objects that have an extra field <code>kind</code> which holds either <code>&quot;A&quot;</code> or <code>&quot;b&quot;</code>. Valid JSON values of type <code>t</code> include <code>{ &quot;kind&quot;: &quot;A&quot; }</code> and <code>{ &quot;kind&quot;: &quot;b&quot;, &quot;value&quot;: 123 }</code>.</p>
+<p>Available since atdgen 1.5.0 and yojson 1.2.0.</p>
+<h3 id="field-untyped">Field '<code>untyped</code>'</h3>
+<p>This flag enables parsing of arbitrary variants without prior knowledge of their type. It is useful for constructing flexible parsers for extensible serializations. <code>json untyped</code> is compatible with regular variants, <code>json tag_field</code> variants, default values, and implicit <code>tag_field</code> constructors.</p>
+<p>Position: on a variant constructor with argument type <code>string * json option</code> (at most one per variant type)</p>
+<p>Value: none, <code>true</code> or <code>false</code></p>
+<p>Semantics: The type definition</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> v = [
+  | <span class="dt">A</span>
+  | <span class="dt">B</span> &lt;json name=<span class="st">&quot;b&quot;</span>&gt; <span class="kw">of</span> <span class="dt">int</span>
+  | <span class="dt">Unknown</span> &lt;json untyped&gt; <span class="kw">of</span> (<span class="dt">string</span> * json <span class="dt">option</span>)
+]</code></pre></div>
+<p>will parse and print <code>&quot;A&quot;</code>, <code>[&quot;b&quot;, 0]</code>, <code>&quot;foo&quot;</code>, and <code>[&quot;bar&quot;, [null]]</code> in a regular variant context. In the <code>tag_field</code> type <code>t</code> context in the previous section, <code>v</code> will parse and print <code>{ &quot;kind&quot;: &quot;foo&quot; }</code> and <code>{ &quot;kind&quot;: &quot;bar&quot;, &quot;value&quot;: [null] }</code> as well as the examples previously given.</p>
+<p>Available since atdgen 1.10.0 and atd 1.2.0.</p>
+<h2 id="section-biniou">Section '<code>biniou</code>'</h2>
+<h3 id="field-repr-1">Field '<code>repr</code>'</h3>
+<h4 id="integers">Integers</h4>
+<p>Position: after <code>int</code> type</p>
+<p>Values: <code>svint</code> (default), <code>uvint</code>, <code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code></p>
+<p>Semantics: specifies an alternate type for representing integers. The default type is <code>svint</code>. The other integers types provided by biniou are supported by Atdgen-biniou. They have to map to the corresponding OCaml types in accordance with the following table:</p>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 30%" />
+<col style="width: 51%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Biniou type</th>
+<th style="text-align: left;">Supported OCaml type</th>
+<th style="text-align: left;">OCaml value range</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>svint</code></td>
+<td style="text-align: left;"><code>int</code></td>
+<td style="text-align: left;"><code>min_int</code> ... <code>max_int</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>uvint</code></td>
+<td style="text-align: left;"><code>int</code></td>
+<td style="text-align: left;">0 ... <code>max_int</code>, <code>min_int</code> ... -1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>int8</code></td>
+<td style="text-align: left;"><code>char</code></td>
+<td style="text-align: left;"><code>'\000'</code> ... <code>'\255'</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>int16</code></td>
+<td style="text-align: left;"><code>int</code></td>
+<td style="text-align: left;">0 ... 65535</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>int32</code></td>
+<td style="text-align: left;"><code>int32</code></td>
+<td style="text-align: left;"><code>Int32.min_int</code> ... <code>Int32.max_int</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>int64</code></td>
+<td style="text-align: left;"><code>int64</code></td>
+<td style="text-align: left;"><code>Int64.min_int</code> ... <code>Int64.max_int</code></td>
+</tr>
+</tbody>
+</table>
+<p>In addition to the mapping above, if the OCaml type is <code>int</code>, any biniou integer type can be read into OCaml data regardless of the declared biniou type.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = {
+  id : <span class="dt">int</span>
+    &lt;ocaml repr=<span class="st">&quot;int64&quot;</span>&gt;
+    &lt;biniou repr=<span class="st">&quot;int64&quot;</span>&gt;;
+  data : <span class="dt">string</span> <span class="dt">list</span>;
+}</code></pre></div>
+<h4 id="floating-point-numbers">Floating-point numbers</h4>
+<p>Position: after <code>float</code> type</p>
+<p>Values: <code>float64</code> (default), <code>float32</code></p>
+<p>Semantics: <code>float32</code> allows for a shorter serialized representation of floats, using 4 bytes instead of 8, with reduced precision. OCaml floats always use 8 bytes, though.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = {
+  lat : float &lt;biniou repr=<span class="st">&quot;float32&quot;</span>&gt;;
+  lon : float &lt;biniou repr=<span class="st">&quot;float32&quot;</span>&gt;;
+}</code></pre></div>
+<h4 id="arrays-and-tables">Arrays and tables</h4>
+<p>Position: applies to lists of records</p>
+<p>Values: <code>array</code> (default), <code>table</code></p>
+<p>Semantics: <code>table</code> uses biniou's table format instead of a regular array for serializing OCaml data into biniou. Both formats are supported for reading into OCaml data regardless of the annotation. The table format allows</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> item = {
+  id : <span class="dt">int</span>;
+  data : <span class="dt">string</span> <span class="dt">list</span>;
+}
+
+<span class="kw">type</span> items = item <span class="dt">list</span> &lt;biniou repr=<span class="st">&quot;table&quot;</span>&gt;</code></pre></div>
+<h2 id="section-ocaml">Section '<code>ocaml</code>'</h2>
+<h3 id="field-predef">Field '<code>predef</code>'</h3>
+<p>Position: left-hand side of a type definition, after the type name</p>
+<p>Values: none, <code>true</code> or <code>false</code></p>
+<p>Semantics: this flag indicates that the corresponding OCaml type definition must be omitted.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* Some third-party OCaml code *)</span>
+<span class="kw">type</span> message = {
+  from : <span class="dt">string</span>;
+  subject : <span class="dt">string</span>;
+  body : <span class="dt">string</span>;
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(*</span>
+<span class="co">   Our own ATD file used for making message_of_string and</span>
+<span class="co">   string_of_message functions.</span>
+<span class="co">*)</span>
+<span class="kw">type</span> message &lt;ocaml predef&gt; = {
+  from : <span class="dt">string</span>;
+  subject : <span class="dt">string</span>;
+  body : <span class="dt">string</span>;
+}</code></pre></div>
+<h3 id="field-mutable">Field '<code>mutable</code>'</h3>
+<p>Position: after a record field name</p>
+<p>Values: none, <code>true</code> or <code>false</code></p>
+<p>Semantics: this flag indicates that the corresponding OCaml record field is mutable.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> counter = {
+  total &lt;ocaml <span class="kw">mutable</span>&gt; : <span class="dt">int</span>;
+  errors &lt;ocaml <span class="kw">mutable</span>&gt; : <span class="dt">int</span>;
+}</code></pre></div>
+<p>translates to the following OCaml definition:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> counter = {
+  <span class="kw">mutable</span> total : <span class="dt">int</span>;
+  <span class="kw">mutable</span> errors : <span class="dt">int</span>;
+}</code></pre></div>
+<h3 id="field-default">Field '<code>default</code>'</h3>
+<p>Position: after a record field name marked with a <code>\~{</code>} symbol or at the beginning of a tuple field.</p>
+<p>Values: any valid OCaml expression</p>
+<p>Semantics: specifies an explicit default value for a field of an OCaml record or tuple, allowing that field to be omitted. Default strings must be escaped.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> color = [ <span class="dt">Black</span> | <span class="dt">White</span> | <span class="dt">Rgb</span> <span class="kw">of</span> (<span class="dt">int</span> * <span class="dt">int</span> * <span class="dt">int</span>) ]
+
+<span class="kw">type</span> ford_t = {
+  year : <span class="dt">int</span>;
+  ~color &lt;ocaml default=<span class="st">&quot;`Black&quot;</span>&gt; : color;
+  ~name &lt;ocaml default=<span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">Ford Model T</span><span class="ch">\&quot;</span><span class="st">&quot;</span>&gt; : <span class="dt">string</span>;
+}
+
+<span class="kw">type</span> point = (<span class="dt">int</span> * <span class="dt">int</span> * &lt;ocaml default=<span class="st">&quot;0&quot;</span>&gt; : <span class="dt">int</span>)</code></pre></div>
+<h3 id="field-from">Field '<code>from</code>'</h3>
+<p>Position: left-hand side of a type definition, after the type name</p>
+<p>Values: OCaml module name without the <code>_t</code>, <code>_b</code>, <code>_j</code> or <code>_v</code> suffix. This can be also seen as the name of the original ATD file, without the <code>.atd</code> extension and capitalized like an OCaml module name.</p>
+<p>Semantics: specifies the base name of the OCaml modules where the type and values coming with that type are defined.</p>
+<p>It is useful for ATD types defined as <code>abstract</code> and for types annotated as predefined using the annotation <code>&lt;ocaml predef&gt;</code>. In both cases, the missing definitions must be provided by modules composed of the base name and the standard suffix assumed by Atdgen which is <code>_t</code>, <code>_b</code>, <code>_j</code> or <code>_v</code>.</p>
+<p>Example: First input file <code>part1.atd</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> point = { x : <span class="dt">int</span>; y : <span class="dt">int</span> }</code></pre></div>
+<p>Second input file <code>part2.atd</code> depending on the first one:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> point &lt;ocaml from=<span class="st">&quot;Part1&quot;</span>&gt; = abstract
+<span class="kw">type</span> points = point <span class="dt">list</span></code></pre></div>
+<h3 id="field-module">Field '<code>module</code>'</h3>
+<h4 id="using-a-custom-wrapper">Using a custom wrapper</h4>
+<p>Using the built-in <code>wrap</code> constructor, it is possible to add a layer of abstraction on top of the concrete structure used for serialization.</p>
+<p>Position: after a <code>wrap</code> type constructor</p>
+<p>Values: OCaml module name</p>
+<p>A common use case is to parse strings used as unique identifiers and wrap the result into an abstract type. Our OCaml module <code>Uid</code> needs to provide a type <code>t</code>, and two functions <code>wrap</code> and <code>unwrap</code> as follows:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t
+<span class="kw">val</span> wrap : <span class="dt">string</span> -&gt; t
+<span class="kw">val</span> unwrap : t -&gt; <span class="dt">string</span></code></pre></div>
+<p>Given that <code>Uid</code> OCaml module, we can write the following ATD definition:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> uid = <span class="dt">string</span> wrap &lt;ocaml <span class="ot">module</span>=<span class="st">&quot;Uid&quot;</span>&gt;</code></pre></div>
+<p>Other languages than OCaml using the same ATD type definitions may or may not add their own abstract layer. Without an annotation, the <code>wrap</code> construct has no effect on the value being wrapped, i.e. <code>wrap</code> and <code>unwrap</code> default to the identity function.</p>
+<p>It is also possible to define <code>t</code>, <code>wrap</code>, and <code>unwrap</code> inline:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> uid = <span class="dt">string</span> wrap &lt;ocaml t=<span class="st">&quot;Uid.t&quot;</span>
+                              wrap=<span class="st">&quot;Uid.wrap&quot;</span>
+                              unwrap=<span class="st">&quot;Uid.unwrap&quot;</span>&gt;</code></pre></div>
+<p>This can be useful for very simple validation:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> uid = <span class="dt">string</span> wrap
+  &lt;ocaml wrap=<span class="st">&quot;fun s -&gt;</span>
+<span class="st">                 if String.length s &lt;&gt; 16 then</span>
+<span class="st">                   failwith </span><span class="ch">\&quot;</span><span class="st">Invalid user ID</span><span class="ch">\&quot;</span><span class="st">;</span>
+<span class="st">                 s&quot;</span>
+  &gt;</code></pre></div>
+<h4 id="importing-an-external-type-definition">Importing an external type definition</h4>
+<p>In most cases since Atdgen 1.2.0 <code>module</code> annotations are deprecated in favor of <code>from</code> annotations previously described.</p>
+<p>Position: left-hand side of a type definition, after the type name</p>
+<p>Values: OCaml module name</p>
+<p>Semantics: specifies the OCaml module where the type and values coming with that type are defined. It is useful for ATD types defined as <code>abstract</code> and for types annotated as predefined using the annotation <code>&lt;ocaml predef&gt;</code>. In both cases, the missing definitions can be provided either by globally opening an OCaml module with an OCaml directive or by specifying locally the name of the module to use.</p>
+<p>The latter approach is recommended because it allows to create type and value aliases in the OCaml module being generated. It results in a complete module signature regardless of the external nature of some items.</p>
+<p>Example: Input file <code>example.atd</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> document &lt;ocaml <span class="ot">module</span>=<span class="st">&quot;Doc&quot;</span>&gt; = abstract
+
+<span class="kw">type</span> color &lt;ocaml predef <span class="ot">module</span>=<span class="st">&quot;Color&quot;</span>&gt; =
+  [ <span class="dt">Black</span> | <span class="dt">White</span> ] &lt;ocaml repr=<span class="st">&quot;classic&quot;</span>&gt;
+
+<span class="kw">type</span> point &lt;ocaml predef <span class="ot">module</span>=<span class="st">&quot;Point&quot;</span>&gt; = {
+  x : float;
+  y : float;
+}</code></pre></div>
+<p>gives the following OCaml type definitions (file <code>example.mli</code>):</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> document = Doc<span class="kw">.</span>document
+
+<span class="kw">type</span> color = Color<span class="kw">.</span>color =  <span class="dt">Black</span> | <span class="dt">White</span>
+
+<span class="kw">type</span> point = Point<span class="kw">.</span>point = { x: float; y: float }</code></pre></div>
+<p>Now for instance <code>Example.Black</code> and <code>Color.Black</code> can be used interchangeably in other modules.</p>
+<h3 id="field-t">Field '<code>t</code>'</h3>
+<h4 id="using-a-custom-wrapper-1">Using a custom wrapper</h4>
+<p>Specifies the OCaml type of an abstract <code>wrap</code> construct, possibly overriding the default <em>M</em><code>.t</code> if <em>M</em> is the module where the <code>wrap</code> and <code>unwrap</code> functions are found.</p>
+<p>Position: after a <code>wrap</code> type constructor</p>
+<p>Values: OCaml type name</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> uid = <span class="dt">string</span> wrap &lt;ocaml <span class="ot">module</span>=<span class="st">&quot;Uid&quot;</span> t=<span class="st">&quot;Uid.uid&quot;</span>&gt;</code></pre></div>
+<p>is equivalent to:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> uid = <span class="dt">string</span> wrap &lt;ocaml t=<span class="st">&quot;Uid.uid&quot;</span> wrap=<span class="st">&quot;Uid.wrap&quot;</span> unwrap=<span class="st">&quot;Uid.unwrap&quot;</span>&gt;</code></pre></div>
+<h4 id="importing-an-external-type-definition-1">Importing an external type definition</h4>
+<p>Position: left-hand side of a type definition, after the type name. Must be used in conjunction with a <code>module</code> field.</p>
+<p>Values: OCaml type name as found in an external module.</p>
+<p>Semantics: This option allows to specify the name of an OCaml type defined in an external module.</p>
+<p>It is useful when the type needs to be renamed because its original name is already in use or not enough informative. Typically we may want to give the name <code>foo</code> to a type originally defined in OCaml as <code>Foo.t</code>.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> foo &lt;ocaml_biniou <span class="ot">module</span>=<span class="st">&quot;Foo&quot;</span> t=<span class="st">&quot;t&quot;</span>&gt; = abstract
+<span class="kw">type</span> bar &lt;ocaml_biniou <span class="ot">module</span>=<span class="st">&quot;Bar&quot;</span> t=<span class="st">&quot;t&quot;</span>&gt; = abstract
+<span class="kw">type</span> t &lt;ocaml_biniou <span class="ot">module</span>=<span class="st">&quot;Baz&quot;</span>&gt; = abstract</code></pre></div>
+<p>allows local type names to be unique and gives the following OCaml type definitions:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> foo = Foo<span class="kw">.</span>t
+<span class="kw">type</span> bar = Bar<span class="kw">.</span>t
+<span class="kw">type</span> t = Baz<span class="kw">.</span>t</code></pre></div>
+<h3 id="fields-wrap-and-unwrap">Fields '<code>wrap</code>' and '<code>unwrap</code>'</h3>
+<p>See &quot;Using a custom wrapper&quot; under section '<code>ocaml</code>', fields '<code>module</code>' and '<code>t</code>'.</p>
+<h3 id="field-field_prefix">Field '<code>field_prefix</code>'</h3>
+<p>Position: record type expression</p>
+<p>Values: any string making a valid prefix for OCaml record field names</p>
+<p>Semantics: specifies a prefix to be prepended to each field of the OCaml definition of the record. Overridden by alternate field names defined on a per-field basis.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> point2 = {
+  x : <span class="dt">int</span>;
+  y : <span class="dt">int</span>;
+} &lt;ocaml field_prefix=<span class="st">&quot;p2_&quot;</span>&gt;</code></pre></div>
+<p>gives the following OCaml type definition:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> point2 = {
+  p2_x : <span class="dt">int</span>;
+  p2_y : <span class="dt">int</span>;
+}</code></pre></div>
+<h3 id="field-name-1">Field '<code>name</code>'</h3>
+<p>Position: after record field name or variant name</p>
+<p>Values: any string making a valid OCaml record field name or variant name</p>
+<p>Semantics: specifies an alternate record field name or variant names to be used in OCaml.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> color = [
+    <span class="dt">Black</span> &lt;ocaml name=<span class="st">&quot;Grey0&quot;</span>&gt;
+  | <span class="dt">White</span> &lt;ocaml name=<span class="st">&quot;Grey100&quot;</span>&gt;
+  | <span class="dt">Grey</span> &lt;ocaml name=<span class="st">&quot;Grey50&quot;</span>&gt;
+]
+
+<span class="kw">type</span> profile = {
+  id &lt;ocaml name=<span class="st">&quot;profile_id&quot;</span>&gt; : <span class="dt">int</span>;
+  username : <span class="dt">string</span>;
+}</code></pre></div>
+<p>gives the following OCaml type definitions:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> color = [
+    <span class="dt">`Grey0</span>
+  | <span class="dt">`Grey100</span>
+  | <span class="dt">`Grey50</span>
+]
+
+<span class="kw">type</span> profile = {
+  profile_id : <span class="dt">int</span>;
+  username : <span class="dt">string</span>;
+}</code></pre></div>
+<h3 id="field-repr-2">Field '<code>repr</code>'</h3>
+<h4 id="integers-1">Integers</h4>
+<p>Position: after <code>int</code> type</p>
+<p>Values: <code>char</code>, <code>int32</code>, <code>int64</code>, <code>float</code></p>
+<p>Semantics: specifies an alternate type for representing integers. The default type is <code>int</code>, but <code>char</code>, <code>int32</code>, <code>int64</code> or <code>float</code> can be used instead.</p>
+<p>The three types <code>char</code>, <code>int32</code> and <code>int64</code> are supported by both Atdgen-biniou and Atdgen-json but Atdgen-biniou currently requires that they map to the corresponding fixed-width types provided by the biniou format.</p>
+<p>The type <code>float</code> is only supported in conjunction with JSON and is useful when an OCaml float is used to represent an integral value, such as a time in seconds returned by <code>Unix.time()</code>. When converted into JSON, floats are rounded to the nearest integer.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = {
+  id : <span class="dt">int</span>
+    &lt;ocaml repr=<span class="st">&quot;int64&quot;</span>&gt;
+    &lt;biniou repr=<span class="st">&quot;int64&quot;</span>&gt;;
+  data : <span class="dt">string</span> <span class="dt">list</span>;
+}</code></pre></div>
+<h4 id="lists-and-arrays">Lists and arrays</h4>
+<p>Position: after a <code>list</code> type</p>
+<p>Values: <code>array</code></p>
+<p>Semantics: maps to OCaml's <code>array</code> type instead of <code>list</code>.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = {
+  id : <span class="dt">int</span>;
+  data : <span class="dt">string</span> <span class="dt">list</span>
+    &lt;ocaml repr=<span class="st">&quot;array&quot;</span>&gt;;
+}</code></pre></div>
+<h4 id="sum-types">Sum types</h4>
+<p>Position: after a sum type (denoted by square brackets)</p>
+<p>Values: <code>classic</code></p>
+<p>Semantics: maps to OCaml's classic variants instead of polymorphic variants.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> fruit = [ <span class="dt">Apple</span> | <span class="dt">Orange</span> ] &lt;ocaml repr=<span class="st">&quot;classic&quot;</span>&gt;</code></pre></div>
+<p>translates to the following OCaml type definition:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> fruit = <span class="dt">Apple</span> | <span class="dt">Orange</span></code></pre></div>
+<h4 id="shared-values-obsolete">Shared values (obsolete)</h4>
+<p>Position: after a <code>shared</code> type</p>
+<p>This feature is obsolete and was last supported by atdgen 1.3.1.</p>
+<h3 id="field-valid">Field '<code>valid</code>'</h3>
+<p>Since atdgen 1.6.0.</p>
+<p>Position: after any type expression except type variables</p>
+<p>Values: OCaml function that takes one argument of the given type and returns a bool</p>
+<p>Semantics: <code>atdgen -v</code> produces for each type named <em>t</em> a function <code>validate_</code><em>t</em>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">val</span> validate_t : Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; t -&gt; Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span></code></pre></div>
+<p>Such a function returns <code>None</code> if and only if the value and all of its subnodes pass all the validators specified by annotations of the form <code>&lt;ocaml validator=&quot;...&quot;&gt;</code> or <code>&lt;ocaml valid=&quot;...&quot;&gt;</code> (at most one per node).</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> positive = <span class="dt">int</span> &lt;ocaml validator=<span class="st">&quot;fun x -&gt; x &gt; 0&quot;</span>&gt;
+
+<span class="kw">type</span> point = {
+  x : positive;
+  y : positive;
+  z : <span class="dt">int</span>;
+}
+  &lt;ocaml valid=<span class="st">&quot;Point.validate&quot;</span>&gt;
+  <span class="co">(* Some validating function from a user-defined module Point *)</span></code></pre></div>
+<p>The generated <code>validate_point</code> function calls the validator for the containing object first (<code>Point.validate</code>) and continues on its fields <code>x</code> then <code>y</code> until an error is returned.</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">match</span> validate_point [] { x = <span class="dv">1</span>; y = <span class="dv">0</span>; z = <span class="dv">1</span> } <span class="kw">with</span>
+| <span class="dt">None</span> -&gt; ()
+| <span class="dt">Some</span> e -&gt;
+    Printf<span class="kw">.</span>eprintf <span class="st">&quot;Error: %s</span><span class="ch">\n</span><span class="st">%!&quot;</span>
+      (Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>string_of_error e)</code></pre></div>
+<p>The above code prints the following error message:</p>
+<pre><code>Error: Validation error; path = &lt;root&gt;.y</code></pre>
+<p>In order to customize the error message and print the faulty value, use <code>validator</code> instead of <code>valid</code>, as described next.</p>
+<h3 id="field-validator">Field '<code>validator</code>'</h3>
+<p>This is a variant of the <code>valid</code> annotation that allows full control over the error message that gets generated in case of an error.</p>
+<p>Position: after any type expression except type variables</p>
+<p>Values: OCaml function that takes the path in current JSON structure and the object to validate, and returns an optional error.</p>
+<p>Semantics: <code>atdgen -v</code> produces for each type named <em>t</em> a function <code>validate_</code><em>t</em>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">val</span> validate_t : Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; t -&gt; Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span></code></pre></div>
+<p>Such a function returns <code>None</code> if and only if the value and all of its subnodes pass all the validators specified by annotations of the form <code>&lt;ocaml validator=&quot;...&quot;&gt;</code> or <code>&lt;ocaml valid=&quot;...&quot;&gt;</code> (at most one per node).</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> positive = <span class="dt">int</span> &lt;ocaml validator=<span class="st">&quot;</span>
+<span class="st">  fun path x -&gt;</span>
+<span class="st">    if x &gt; 0 then None</span>
+<span class="st">    else</span>
+<span class="st">      Some (</span>
+<span class="st">        Ag_util.Validation.error</span>
+<span class="st">          ~msg: (</span><span class="ch">\&quot;</span><span class="st">Not a positive integer: </span><span class="ch">\&quot;</span><span class="st"> ^ string_of_int x)</span>
+<span class="st">          path</span>
+<span class="st">      )</span>
+<span class="st">&quot;</span>&gt;
+
+<span class="kw">type</span> point = {
+  x : positive;
+  y : positive;
+  z : <span class="dt">int</span>;
+}
+  &lt;ocaml validator=<span class="st">&quot;Point.validate&quot;</span>&gt;
+  <span class="co">(* Some validating function from a user-defined module Point *)</span></code></pre></div>
+<p>The following user code</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">match</span> Toto_v<span class="kw">.</span>validate_point [] { x = <span class="dv">1</span>; y = <span class="dv">0</span>; z = <span class="dv">1</span> } <span class="kw">with</span>
+| <span class="dt">None</span> -&gt; ()
+| <span class="dt">Some</span> e -&gt;
+    Printf<span class="kw">.</span>eprintf <span class="st">&quot;Error: %s</span><span class="ch">\n</span><span class="st">%!&quot;</span>
+      (Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>string_of_error e)</code></pre></div>
+<p>results in printing:</p>
+<pre><code>Error: Validation error: Not a positive integer: 0; path = &lt;root&gt;.y</code></pre>
+<h2 id="section-ocaml_biniou">Section '<code>ocaml_biniou</code>'</h2>
+<p>Section <code>ocaml_biniou</code> takes precedence over section <code>ocaml</code> in Biniou mode (<code>-b</code>) for the following fields:</p>
+<ul>
+<li><code>predef</code> (see section <code>ocaml</code>, field <code>predef</code>)</li>
+<li><code>module</code> (see section <code>ocaml</code>, field <code>module</code>)</li>
+<li><code>t</code> (see section <code>ocaml.t</code>)</li>
+</ul>
+<h2 id="section-ocaml_json-obsolete">Section '<code>ocaml_json</code>' (obsolete)</h2>
+<p>Section <code>ocaml_json</code> takes precedence over section <code>ocaml</code> in JSON mode (<code>-json</code> or <code>-j</code>) for the following fields:</p>
+<ul>
+<li><code>predef</code> (see section <code>ocaml</code>, field <code>predef</code>)</li>
+<li><code>module</code> (see section <code>ocaml</code>, field <code>module</code>)</li>
+<li><code>t</code> (see section <code>ocaml</code>, field <code>t</code>)</li>
+</ul>
+<p>Please note that <code>atdgen -json</code> is now deprecated in favor of <code>atdgen -j</code> (json) and <code>atdgen -t</code> (types). The latter is in charge of producing type definitions independently from JSON and will ignore <code>&lt;ocaml_json ...&gt;</code> annotations, making them almost useless. The equivalent <code>&lt;ocaml ...&gt;</code> annotations are almost always preferable.</p>
+<p>Example:</p>
+<p>This example shows how to parse a field into a generic tree of type <code>Yojson.Safe.json</code> rather than a value of a specialized OCaml type.</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> dyn &lt;ocaml_json <span class="ot">module</span>=<span class="st">&quot;Yojson.Safe&quot;</span> t=<span class="st">&quot;json&quot;</span>&gt; = abstract
+
+<span class="kw">type</span> t = { foo: <span class="dt">int</span>; bar: dyn }</code></pre></div>
+<p>translates to the following OCaml type definitions:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> dyn = Yojson<span class="kw">.</span>Safe<span class="kw">.</span>json
+
+<span class="kw">type</span> t = { foo : <span class="dt">int</span>; bar : dyn }</code></pre></div>
+<p>Sample OCaml value of type <code>t</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml">{
+  foo = <span class="dv">12345</span>;
+  bar =
+    <span class="dt">`List</span> [
+      <span class="dt">`Int</span> <span class="dv">12</span>;
+      <span class="dt">`String</span> <span class="st">&quot;abc&quot;</span>;
+      <span class="dt">`Assoc</span> [
+        <span class="st">&quot;x&quot;</span>, <span class="dt">`Float</span> <span class="fl">3.14</span>;
+        <span class="st">&quot;y&quot;</span>, <span class="dt">`Float</span> <span class="fl">0.0</span>;
+        <span class="st">&quot;color&quot;</span>, <span class="dt">`List</span> [ <span class="dt">`Float</span> <span class="fl">0.3</span>; <span class="dt">`Float</span> <span class="fl">0.0</span>; <span class="dt">`Float</span> <span class="fl">1.0</span> ]
+      ]
+    ]
+}</code></pre></div>
+<p>Corresponding JSON data as obtained with <code>string_of_t</code>:</p>
+<pre><code>{&quot;foo&quot;:12345,&quot;bar&quot;:[12,&quot;abc&quot;,{&quot;x&quot;:3.14,&quot;y&quot;:0.0,&quot;color&quot;:[0.3,0.0,1.0]}]}</code></pre>
+<h2 id="section-doc">Section '<code>doc</code>'</h2>
+<p>Unlike comments, <code>doc</code> annotations are meant to be propagated into the generated source code. This is useful for making generated interface files readable without having to consult the original ATD file.</p>
+<p>Generated source code comments can comply to a standard format and take advantage of documentation generators such as javadoc or ocamldoc.</p>
+<h3 id="field-text">Field '<code>text</code>'</h3>
+<p>Position:</p>
+<ul>
+<li>after the type name on the left-hand side of a type definition</li>
+<li>after the type expression on the right hand of a type definition (but not after any type expression)</li>
+<li>after record field names</li>
+<li>after variant names</li>
+</ul>
+<p>Values: UTF-8-encoded text using a minimalistic markup language</p>
+<p>Semantics: The markup language is defined as follows:</p>
+<ul>
+<li>Blank lines separate paragraphs.</li>
+<li><code>{{ }}</code> can be used to enclose inline verbatim text.</li>
+<li><code>{{{ }}}</code> can be used to enclose verbatim text where whitespace is preserved.</li>
+<li>The backslash character is used to escape special character sequences. In regular paragraph mode the special sequences are <code>\</code>, <code>{{</code> and <code>{{{</code>. In inline verbatim text, special sequences are <code>\</code> and <code>}}</code>. In verbatim text, special sequences are <code>\</code> and <code>}}}</code>.</li>
+</ul>
+<p>Example: The following is an example demonstrating the use of <code>doc</code> annotations generated using:</p>
+<pre><code>$ atdgen -t ocamldoc_example.atd</code></pre>
+<p>Input file <code>ocamldoc_example.atd</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml">&lt;doc text=<span class="st">&quot;This is the title&quot;</span>&gt;
+
+<span class="kw">type</span> point = {
+  x &lt;doc text=<span class="st">&quot;The first coordinate&quot;</span>&gt;: float;
+  y &lt;doc text=<span class="st">&quot;The second coordinate&quot;</span>&gt;: float;
+}
+  &lt;doc text=<span class="st">&quot;</span>
+<span class="st">The type of a point. A value {{p}} can be created as follows:</span>
+<span class="st">{{{</span>
+<span class="st">let p = { x = 1.2; y = 5.0 }</span>
+<span class="st">}}}</span>
+<span class="st">&quot;</span>&gt;
+
+<span class="kw">type</span> color = [
+ | <span class="dt">Black</span> &lt;doc text=<span class="st">&quot;Same as {{RGB (0,0,0)}}&quot;</span>&gt;
+ | <span class="dt">White</span> &lt;doc text=<span class="st">&quot;Same as {{RGB (255, 255, 255)}}&quot;</span>&gt;
+ | <span class="dt">RGB</span>
+     &lt;doc text=<span class="st">&quot;Red, green, blue components&quot;</span>&gt;
+     <span class="kw">of</span> (<span class="dt">int</span> * <span class="dt">int</span> * <span class="dt">int</span>)
+]</code></pre></div>
+<p>translates using <code>atdgen -t ocamldoc_example.atd</code> into the following OCaml interface file <code>ocamldoc_example_t.mli</code> with ocamldoc-compliant comments:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* Auto-generated from &quot;ocamldoc_example.atd&quot; *)</span>
+
+
+<span class="co">(** This is the title *)</span>
+
+<span class="co">(**</span>
+<span class="co">  The type of a point. A value [p] can be created as follows:</span>
+
+<span class="co">{v</span>
+<span class="co">let p = \{ x = 1.2; y = 5.0 \}</span>
+<span class="co">v}</span>
+<span class="co">*)</span>
+<span class="kw">type</span> point = {
+  x: float <span class="co">(** The first coordinate *)</span>;
+  y: float <span class="co">(** The second coordinate *)</span>
+}
+
+<span class="kw">type</span> color = [
+    <span class="dt">`Black</span> <span class="co">(** Same as [RGB (0,0,0)] *)</span>
+  | <span class="dt">`White</span> <span class="co">(** Same as [RGB (255, 255, 255)] *)</span>
+  | <span class="dt">`RGB</span> <span class="kw">of</span> (<span class="dt">int</span> * <span class="dt">int</span> * <span class="dt">int</span>) <span class="co">(** Red, green, blue components *)</span>
+]</code></pre></div>
+<h1 id="library">Library</h1>
+<p>A library named <code>atdgen</code> is installed by the standard installation process. Only a fraction of it is officially supported and documented. It is intended for tool developers. Please refer to the comments in the <a href="https://github.com/mjambon/atdgen">source code of atdgen</a>.</p>
+<h1 id="see-also">See also</h1>
+<p><a href="atd-syntax">atd</a>(1)</p>
+</body>
+</html>

@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>atdgen tutorial</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" href="atdgen.css">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header>
+<h1 class="title">atdgen tutorial</h1>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#what-is-atdgen">What is atdgen?</a></li>
+<li><a href="#what-are-the-advantages-of-atdgen">What are the advantages of atdgen?</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#getting-started">Getting started</a></li>
+<li><a href="#inspecting-and-pretty-printing-json">Inspecting and pretty-printing JSON</a></li>
+<li><a href="#inspecting-biniou-data">Inspecting biniou data</a></li>
+<li><a href="#optional-fields-and-default-values">Optional fields and default values</a></li>
+<li><a href="#smooth-protocol-upgrades">Smooth protocol upgrades</a><ul>
+<li><a href="#adding-or-removing-an-optional-record-field">Adding or removing an optional record field</a></li>
+<li><a href="#adding-a-required-record-field">Adding a required record field</a></li>
+<li><a href="#removing-a-required-record-field">Removing a required record field</a></li>
+<li><a href="#adding-a-variant-case">Adding a variant case</a></li>
+<li><a href="#removing-a-variant-case">Removing a variant case</a></li>
+<li><a href="#avoiding-future-problems">Avoiding future problems</a></li>
+</ul></li>
+<li><a href="#data-validation">Data validation</a></li>
+<li><a href="#modularity-referring-to-type-definitions-from-another-atd-file">Modularity: referring to type definitions from another ATD file</a></li>
+<li><a href="#managing-json-configuration-files">Managing JSON configuration files</a></li>
+<li><a href="#integration-with-ocamldoc">Integration with ocamldoc</a></li>
+<li><a href="#integration-with-build-systems">Integration with build systems</a><ul>
+<li><a href="#omake">OMake</a></li>
+<li><a href="#gnu-make">GNU Make</a></li>
+<li><a href="#ocamlbuild">Ocamlbuild</a></li>
+</ul></li>
+<li><a href="#dealing-with-untypable-json">Dealing with untypable JSON</a></li>
+</ul>
+</nav>
+<p><a href="https://mjambon.github.io/atdgen-doc/">Home</a></p>
+<h1 id="what-is-atdgen">What is atdgen?</h1>
+<p>Atdgen is a tool that derives OCaml boilerplate code from type definitions. Currently it provides support for:</p>
+<ul>
+<li><a href="http://json.org/">JSON</a> serialization and deserialization.</li>
+<li><a href="http://mjambon.com/biniou-format.txt">Biniou</a> serialization and deserialization. Biniou is a binary format extensible like JSON but more compact and faster to process.</li>
+<li>Convenience functions for creating and validating OCaml data.</li>
+</ul>
+<h1 id="what-are-the-advantages-of-atdgen">What are the advantages of atdgen?</h1>
+<p>Atdgen has a number of advantages over its predecessor json-static which was based on Camlp4:</p>
+<ul>
+<li>produces explicit interfaces which describe what is available to the user (<code>.mli</code> files).</li>
+<li>produces readable OCaml code that can be easily reviewed (<code>.ml</code> files).</li>
+<li>produces fast code, 3x faster than json-static.</li>
+<li>runs fast, keeping build times low.</li>
+<li>same ATD definitions can be used to generate code other than OCaml. See for instance <a href="https://github.com/esperco/atdj">atdj</a> which generates Java classes for JSON IO. Auto-generating GUI widgets from type definitions is another popular use of annotated type definitions. The implementation of such code generators is facilitated by the <a href="https://github.com/mjambon/atd"><code>atd</code></a> library.</li>
+</ul>
+<h1 id="prerequisites">Prerequisites</h1>
+<p>This tutorial assumes that you are using atdgen version 1.5.0 or above. The following command tells you which version you are using:</p>
+<pre><code>$ atdgen -version
+1.5.0</code></pre>
+<p>The recommended way of installing atdgen and all its dependencies is with <a href="http://opam.ocamlpro.com/">opam</a>:</p>
+<pre><code>$ opam install atdgen</code></pre>
+<h1 id="getting-started">Getting started</h1>
+<p>From now on we assume that atdgen 1.5.0 or above is installed properly.</p>
+<pre><code>$ atdgen -version
+1.5.0</code></pre>
+<p>Type definitions are placed in a <code>.atd</code> file (<code>hello.atd</code>):</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> date = {
+  year : <span class="dt">int</span>;
+  month : <span class="dt">int</span>;
+  day : <span class="dt">int</span>;
+}</code></pre></div>
+<p>Our handwritten OCaml program is <code>hello.ml</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="ot">open</span> Hello_t
+<span class="kw">let</span> () =
+  <span class="kw">let</span> date = { year = <span class="dv">1970</span>; month = <span class="dv">1</span>; day = <span class="dv">1</span> } <span class="kw">in</span>
+  print_endline (Hello_j<span class="kw">.</span>string_of_date date)</code></pre></div>
+<p>We produce OCaml code from the type definitions using <code>atdgen</code>:</p>
+<pre><code>$ atdgen -t hello.atd     # produces OCaml type definitions
+$ atdgen -j hello.atd     # produces OCaml code dealing with JSON</code></pre>
+<p>We now have <code>_t</code> and <code>_j</code> files produced by <code>atdgen -t</code> and <code>atdgen -j</code> respectively:</p>
+<pre><code>$ ls
+hello.atd  hello.ml  hello_j.ml  hello_j.mli  hello_t.ml  hello_t.mli</code></pre>
+<p>We compile all <code>.mli</code> and <code>.ml</code> files:</p>
+<pre><code>$ ocamlfind ocamlc -c hello_t.mli -package atdgen
+$ ocamlfind ocamlc -c hello_j.mli -package atdgen
+$ ocamlfind ocamlopt -c hello_t.ml -package atdgen
+$ ocamlfind ocamlopt -c hello_j.ml -package atdgen
+$ ocamlfind ocamlopt -c hello.ml -package atdgen
+$ ocamlfind ocamlopt -o hello hello_t.cmx hello_j.cmx hello.cmx \
+    -package atdgen -linkpkg</code></pre>
+<p>And finally we run our <code>hello</code> program:</p>
+<pre><code>$ ./hello
+{&quot;year&quot;:1970,&quot;month&quot;:1,&quot;day&quot;:1}</code></pre>
+<p><a href="https://github.com/mjambon/atdgen-doc/src/tutorial-data/hello">Source code for this section</a></p>
+<h1 id="inspecting-and-pretty-printing-json">Inspecting and pretty-printing JSON</h1>
+<p>Input JSON data:</p>
+<pre><code>$ cat single.json
+[1234,&quot;abcde&quot;,{&quot;start_date&quot;:{&quot;year&quot;:1970,&quot;month&quot;:1,&quot;day&quot;:1},
+&quot;end_date&quot;:{&quot;year&quot;:1980,&quot;month&quot;:1,&quot;day&quot;:1}}]</code></pre>
+<p>Pretty-printed JSON can be produced with the <code>ydump</code> command:</p>
+<pre><code>$ ydump single.json
+[
+  1234,
+  &quot;abcde&quot;,
+  {
+    &quot;start_date&quot;: { &quot;year&quot;: 1970, &quot;month&quot;: 1, &quot;day&quot;: 1 },
+    &quot;end_date&quot;: { &quot;year&quot;: 1980, &quot;month&quot;: 1, &quot;day&quot;: 1 }
+  }
+]</code></pre>
+<p>Multiple JSON objects separated by whitespace, typically one JSON object per line, can also be pretty-printed with <code>ydump</code>. Input:</p>
+<pre><code>$ cat stream.json
+[1234,&quot;abcde&quot;,{&quot;start_date&quot;:{&quot;year&quot;:1970,&quot;month&quot;:1,&quot;day&quot;:1},
+&quot;end_date&quot;:{&quot;year&quot;:1980,&quot;month&quot;:1,&quot;day&quot;:1}}]
+[1,&quot;a&quot;,{}]</code></pre>
+<p>In this case the <code>-s</code> option is required:</p>
+<pre><code>$ ydump -s stream.json
+[
+  1234,
+  &quot;abcde&quot;,
+  {
+    &quot;start_date&quot;: { &quot;year&quot;: 1970, &quot;month&quot;: 1, &quot;day&quot;: 1 },
+    &quot;end_date&quot;: { &quot;year&quot;: 1980, &quot;month&quot;: 1, &quot;day&quot;: 1 }
+  }
+]
+[ 1, &quot;a&quot;, {} ]</code></pre>
+<p>From an OCaml program, pretty-printing can be done with <code>Yojson.Safe.prettify</code> which has the following signature:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">val</span> prettify : <span class="dt">string</span> -&gt; <span class="dt">string</span></code></pre></div>
+<p>We wrote a tiny program that simply calls the <code>prettify</code> function on some predefined JSON data (file <code>prettify.ml</code>):</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">let</span> json =
+<span class="st">&quot;[1234,</span><span class="ch">\&quot;</span><span class="st">abcde</span><span class="ch">\&quot;</span><span class="st">,{</span><span class="ch">\&quot;</span><span class="st">start_date</span><span class="ch">\&quot;</span><span class="st">:{</span><span class="ch">\&quot;</span><span class="st">year</span><span class="ch">\&quot;</span><span class="st">:1970,</span><span class="ch">\&quot;</span><span class="st">month</span><span class="ch">\&quot;</span><span class="st">:1,</span><span class="ch">\&quot;</span><span class="st">day</span><span class="ch">\&quot;</span><span class="st">:1},</span>
+<span class="ch">\&quot;</span><span class="st">end_date</span><span class="ch">\&quot;</span><span class="st">:{</span><span class="ch">\&quot;</span><span class="st">year</span><span class="ch">\&quot;</span><span class="st">:1980,</span><span class="ch">\&quot;</span><span class="st">month</span><span class="ch">\&quot;</span><span class="st">:1,</span><span class="ch">\&quot;</span><span class="st">day</span><span class="ch">\&quot;</span><span class="st">:1}}]&quot;</span>
+
+<span class="kw">let</span> () = print_endline (Yojson<span class="kw">.</span>Safe<span class="kw">.</span>prettify json)</code></pre></div>
+<p>We now compile and run prettify.ml:</p>
+<pre><code>$ ocamlfind ocamlopt -o prettify prettify.ml -package atdgen -linkpkg
+$ ./prettify
+[
+  1234,
+  &quot;abcde&quot;,
+  {
+    &quot;start_date&quot;: { &quot;year&quot;: 1970, &quot;month&quot;: 1, &quot;day&quot;: 1 },
+    &quot;end_date&quot;: { &quot;year&quot;: 1980, &quot;month&quot;: 1, &quot;day&quot;: 1 }
+  }
+]</code></pre>
+<p><a href="https://github.com/mjambon/atdgen-doc/src/tutorial-data/pretty-json">Source code for this section</a></p>
+<h1 id="inspecting-biniou-data">Inspecting biniou data</h1>
+<p>Biniou is a binary format that can be displayed as text using a generic command called <code>bdump</code>. The only practical difficulty is to recover the original field names and variant names which are stored as 31-bit hashes. Unhashing them is done by consulting a dictionary (list of words) maintained by the user.</p>
+<p>Let's first produce a sample data file <code>tree.dat</code> containing the biniou representation of a binary tree. In the same program we will also demonstrate how to render biniou data into text from an OCaml program.</p>
+<p>Here is the ATD file defining our tree type (file <code>tree.atd</code>):</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> tree = [
+  | <span class="dt">Empty</span>
+  | <span class="dt">Node</span> <span class="kw">of</span> (tree * <span class="dt">int</span> * tree)
+]</code></pre></div>
+<p>This is our OCaml program (file <code>tree.ml</code>):</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="ot">open</span> Printf
+
+<span class="co">(* sample value *)</span>
+<span class="kw">let</span> tree : Tree_t<span class="kw">.</span>tree =
+  <span class="dt">`Node</span> (
+    <span class="dt">`Node</span> (<span class="dt">`Empty</span>, <span class="dv">1</span>, <span class="dt">`Empty</span>),
+    <span class="dv">2</span>,
+    <span class="dt">`Node</span> (
+      <span class="dt">`Node</span> (<span class="dt">`Empty</span>, <span class="dv">3</span>, <span class="dt">`Empty</span>),
+      <span class="dv">4</span>,
+      <span class="dt">`Node</span> (<span class="dt">`Empty</span>, <span class="dv">5</span>, <span class="dt">`Empty</span>)
+    )
+  )
+
+<span class="kw">let</span> () =
+  <span class="co">(* write sample value to file *)</span>
+  <span class="kw">let</span> fname = <span class="st">&quot;tree.dat&quot;</span> <span class="kw">in</span>
+  Ag_util<span class="kw">.</span>Biniou<span class="kw">.</span>to_file Tree_b<span class="kw">.</span>write_tree fname tree;
+
+  <span class="co">(* write sample value to string *)</span>
+  <span class="kw">let</span> s = Tree_b<span class="kw">.</span>string_of_tree tree <span class="kw">in</span>
+  printf <span class="st">&quot;raw value (saved as %s):</span><span class="ch">\n</span><span class="st">%S</span><span class="ch">\n</span><span class="st">&quot;</span> fname s;
+  printf <span class="st">&quot;length: %i</span><span class="ch">\n</span><span class="st">&quot;</span> (String<span class="kw">.</span>length s);
+
+  printf <span class="st">&quot;pretty-printed value (without dictionary):</span><span class="ch">\n</span><span class="st">&quot;</span>;
+  print_endline (Bi_io<span class="kw">.</span>view s);
+
+  printf <span class="st">&quot;pretty-printed value (with dictionary):</span><span class="ch">\n</span><span class="st">&quot;</span>;
+  <span class="kw">let</span> unhash = Bi_io<span class="kw">.</span>make_unhash [<span class="st">&quot;Empty&quot;</span>; <span class="st">&quot;Node&quot;</span>; <span class="st">&quot;foo&quot;</span>; <span class="st">&quot;bar&quot;</span> ] <span class="kw">in</span>
+  print_endline (Bi_io<span class="kw">.</span>view ~unhash s)</code></pre></div>
+<p>Compilation:</p>
+<pre><code>$ atdgen -t tree.atd
+$ atdgen -b tree.atd
+$ ocamlfind ocamlopt -o tree \
+    tree_t.mli tree_t.ml tree_b.mli tree_b.ml tree.ml \
+    -package atdgen -linkpkg</code></pre>
+<p>Running the program:</p>
+<pre><code>$ ./tree
+raw value (saved as tree.dat):
+&quot;\023\179\2276\&quot;\020\003\023\179\2276\&quot;\020\003\023\003\007\170m\017\002\023\003\007\170m\017\004\023\179\2276\&quot;\020\003\023\179\2276\&quot;\020\003\023\003\007\170m\017\006\023\003\007\170m\017\b\023\179\2276\&quot;\020\003\023\003\007\170m\017\n\023\003\007\170m&quot;
+length: 75
+pretty-printed value (without dictionary):
+&lt;#33e33622:
+   (&lt;#33e33622: (&lt;#0307aa6d&gt;, 1, &lt;#0307aa6d&gt;)&gt;,
+    2,
+    &lt;#33e33622:
+       (&lt;#33e33622: (&lt;#0307aa6d&gt;, 3, &lt;#0307aa6d&gt;)&gt;,
+        4,
+        &lt;#33e33622: (&lt;#0307aa6d&gt;, 5, &lt;#0307aa6d&gt;)&gt;)&gt;)&gt;
+pretty-printed value (with dictionary):
+&lt;&quot;Node&quot;:
+   (&lt;&quot;Node&quot;: (&lt;&quot;Empty&quot;&gt;, 1, &lt;&quot;Empty&quot;&gt;)&gt;,
+    2,
+    &lt;&quot;Node&quot;:
+       (&lt;&quot;Node&quot;: (&lt;&quot;Empty&quot;&gt;, 3, &lt;&quot;Empty&quot;&gt;)&gt;,
+        4,
+        &lt;&quot;Node&quot;: (&lt;&quot;Empty&quot;&gt;, 5, &lt;&quot;Empty&quot;&gt;)&gt;)&gt;)&gt;</code></pre>
+<p>Now let's see how to pretty-print any biniou data from the command line. Our sample data are now in file <code>tree.dat</code>:</p>
+<pre><code>$ ls -l tree.dat
+-rw-r--r-- 1 martin martin 75 Apr 17 01:46 tree.dat</code></pre>
+<p>We use the command <code>bdump</code> to render our sample biniou data as text:</p>
+<pre><code>$ bdump tree.dat
+&lt;#33e33622:
+   (&lt;#33e33622: (&lt;#0307aa6d&gt;, 1, &lt;#0307aa6d&gt;)&gt;,
+    2,
+    &lt;#33e33622:
+       (&lt;#33e33622: (&lt;#0307aa6d&gt;, 3, &lt;#0307aa6d&gt;)&gt;,
+        4,
+        &lt;#33e33622: (&lt;#0307aa6d&gt;, 5, &lt;#0307aa6d&gt;)&gt;)&gt;)&gt;</code></pre>
+<p>We got hashes for the variant names <code>Empty</code> and <code>Node</code>. Let's add them to the dictionary:</p>
+<pre><code>$ bdump -w Empty,Node tree.dat
+&lt;&quot;Node&quot;:
+   (&lt;&quot;Node&quot;: (&lt;&quot;Empty&quot;&gt;, 1, &lt;&quot;Empty&quot;&gt;)&gt;,
+    2,
+    &lt;&quot;Node&quot;:
+       (&lt;&quot;Node&quot;: (&lt;&quot;Empty&quot;&gt;, 3, &lt;&quot;Empty&quot;&gt;)&gt;,
+        4,
+        &lt;&quot;Node&quot;: (&lt;&quot;Empty&quot;&gt;, 5, &lt;&quot;Empty&quot;&gt;)&gt;)&gt;)&gt;</code></pre>
+<p><code>bdump</code> remembers the dictionary so we don't have to pass the <code>-w</code> option anymore (for this user on this machine). The following now works:</p>
+<pre><code>$ bdump tree.dat
+&lt;&quot;Node&quot;:
+   (&lt;&quot;Node&quot;: (&lt;&quot;Empty&quot;&gt;, 1, &lt;&quot;Empty&quot;&gt;)&gt;,
+    2,
+    &lt;&quot;Node&quot;:
+       (&lt;&quot;Node&quot;: (&lt;&quot;Empty&quot;&gt;, 3, &lt;&quot;Empty&quot;&gt;)&gt;,
+        4,
+        &lt;&quot;Node&quot;: (&lt;&quot;Empty&quot;&gt;, 5, &lt;&quot;Empty&quot;&gt;)&gt;)&gt;)&gt;</code></pre>
+<p><a href="https://github.com/mjambon/atdgen-doc/src/tutorial-data/inspect-biniou">Source code for this section</a></p>
+<h1 id="optional-fields-and-default-values">Optional fields and default values</h1>
+<p>Although OCaml records do not support optional fields, both the JSON and biniou formats make it possible to omit certain fields on a per-record basis.</p>
+<p>For example the JSON record <code>{ &quot;x&quot;: 0, &quot;y&quot;: 0 }</code> can be more compactly written as <code>{}</code> if the reader knows the default values for the missing fields <code>x</code> and <code>y</code>. Here is the corresponding type definition:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> vector_v1 = { ~x: <span class="dt">int</span>; ~y: <span class="dt">int</span> }</code></pre></div>
+<p><code>~x</code> means that field <code>x</code> supports a default value. Since we do not specify the default value ourselves, the built-in default is used, which is 0.</p>
+<p>If we want the default to be something else than 0, we just have to specify it as follows:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> vector_v2 = {
+  ~x &lt;ocaml default=<span class="st">&quot;1&quot;</span>&gt;: <span class="dt">int</span>; <span class="co">(* default x is 1 *)</span>
+  ~y: <span class="dt">int</span>;                     <span class="co">(* default y is 0 *)</span>
+}</code></pre></div>
+<p>It is also possible to specify optional fields without a default value. For example, let's add an optional <code>z</code> field:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> vector_v3 = {
+  ~x: <span class="dt">int</span>;
+  ~y: <span class="dt">int</span>;
+  ?z: <span class="dt">int</span> <span class="dt">option</span>;
+}</code></pre></div>
+<p>The following two examples are valid JSON representations of data of type <code>vector_v3</code>:</p>
+<pre><code>{ &quot;x&quot;: 2, &quot;y&quot;: 2, &quot;z&quot;: 3 }  // OCaml: { x = 2; y = 2; z = Some 3 }</code></pre>
+<pre><code>{ &quot;x&quot;: 2, &quot;y&quot;: 2 }          // OCaml: { x = 2; y = 2; z = None }</code></pre>
+<p>For a variety of good reasons JSON's <code>null</code> value may not be used to indicate that a field is undefined. Therefore the following JSON data cannot be read as a record of type <code>vector_v3</code>:</p>
+<pre><code>{ &quot;x&quot;: 2, &quot;y&quot;: 2, &quot;z&quot;: null }  // invalid value for field z</code></pre>
+<p>Note also the difference between <code>?z: int option</code> and <code>~z: int option</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> vector_v4 = {
+  ~x: <span class="dt">int</span>;
+  ~y: <span class="dt">int</span>;
+  ~z: <span class="dt">int</span> <span class="dt">option</span>;  <span class="co">(* no unwrapping of the JSON field value! *)</span>
+}</code></pre></div>
+<p>Here are valid values of type <code>vector_v4</code>, showing that it is usually not what is intended:</p>
+<pre><code>{ &quot;x&quot;: 2, &quot;y&quot;: 2, &quot;z&quot;: [ &quot;Some&quot;, 3 ] }</code></pre>
+<pre><code>{ &quot;x&quot;: 2, &quot;y&quot;: 2, &quot;z&quot;: &quot;None&quot; }</code></pre>
+<pre><code>{ &quot;x&quot;: 2, &quot;y&quot;: 2 }</code></pre>
+<h1 id="smooth-protocol-upgrades">Smooth protocol upgrades</h1>
+<p>Problem: you have a production system that uses a specific JSON or biniou format. It may be data files or a client-server pair. You now want to add a field to a record type or to add a case to a variant type.</p>
+<p>Both JSON and biniou allow extra record fields. If the consumer does not know how to deal with the extra field, the default behavior is to happily ignore it.</p>
+<h2 id="adding-or-removing-an-optional-record-field">Adding or removing an optional record field</h2>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = {
+  x: <span class="dt">int</span>;
+  y: <span class="dt">int</span>;
+}</code></pre></div>
+<p>Same <code>.atd</code> source file, edited:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = {
+  x: <span class="dt">int</span>;
+  y: <span class="dt">int</span>;
+  ~z: <span class="dt">int</span>; <span class="co">(* new field *)</span>
+}</code></pre></div>
+<ul>
+<li>Upgrade producers and consumers in any order</li>
+<li>Converting old data is not required nor useful</li>
+</ul>
+<h2 id="adding-a-required-record-field">Adding a required record field</h2>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = {
+  x: <span class="dt">int</span>;
+  y: <span class="dt">int</span>;
+}</code></pre></div>
+<p>Same <code>.atd</code> source file, edited:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = {
+  x: <span class="dt">int</span>;
+  y: <span class="dt">int</span>;
+  z: <span class="dt">int</span>; <span class="co">(* new field *)</span>
+}</code></pre></div>
+<ul>
+<li>Upgrade all producers before the consumers</li>
+<li>Converting old data requires special-purpose hand-written code</li>
+</ul>
+<h2 id="removing-a-required-record-field">Removing a required record field</h2>
+<ul>
+<li>Upgrade all consumers before the producers</li>
+<li>Converting old data is not required but may save some storage space (just read and re-write each record using the new type)</li>
+</ul>
+<h2 id="adding-a-variant-case">Adding a variant case</h2>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = [ <span class="dt">A</span> | <span class="dt">B</span> ]</code></pre></div>
+<p>Same <code>.atd</code> source file, edited:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = [ <span class="dt">A</span> | <span class="dt">B</span> | <span class="dt">C</span> ]</code></pre></div>
+<ul>
+<li>Upgrade all consumers before the producers</li>
+<li>Converting old data is not required and would have no effect</li>
+</ul>
+<h2 id="removing-a-variant-case">Removing a variant case</h2>
+<ul>
+<li>Upgrade all producers before the consumers</li>
+<li>Converting old data requires special-purpose hand-written code</li>
+</ul>
+<h2 id="avoiding-future-problems">Avoiding future problems</h2>
+<ul>
+<li>In doubt, use records rather than tuples because it makes it possible to add or remove any field or to reorder them.</li>
+<li>Do not hesitate to create variant types with only one case or records with only one field if you think they might be extended later.</li>
+</ul>
+<h1 id="data-validation">Data validation</h1>
+<p>Atdgen can be used to produce data validators for all types defined in an ATD file, based on user-given validators specified only for certain types. A simple example is:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = <span class="dt">string</span> &lt;ocaml valid=<span class="st">&quot;fun s -&gt; String.length s &gt;= 8&quot;</span>&gt; <span class="dt">option</span></code></pre></div>
+<p><code>atdgen -v</code> will produce something equivalent to the following implementation:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">let</span> validate_t x =
+  <span class="kw">match</span> x <span class="kw">with</span>
+      <span class="dt">None</span> -&gt; <span class="kw">true</span>
+    | <span class="dt">Some</span> x -&gt; (<span class="kw">fun</span> s -&gt; String<span class="kw">.</span>length s &gt;= <span class="dv">8</span>) x</code></pre></div>
+<p>Let's now consider a more realistic example with complex validators defined in a separate <code>.ml</code> file. We created the following 3 source files:</p>
+<ul>
+<li><code>resume.atd</code>: contains the type definitions with annotations</li>
+<li><code>resume_util.ml</code>: contains our handwritten validators</li>
+<li><code>resume.ml</code>: is our main program that creates data and calls the validators</li>
+</ul>
+<p>In terms of OCaml modules we have:</p>
+<ul>
+<li><code>Resume_t</code>: produced by <code>atdgen -t resume.atd</code>, provides OCaml type definitions</li>
+<li><code>Resume_util</code>: depends on <code>Resume_t</code>, provides validators mentioned in <code>resume.atd</code></li>
+<li><code>Resume_v</code>: produced by <code>atdgen -v resume.atd</code>, depends on <code>Resume_util</code>, provides a validator for each type</li>
+<li><code>Resume</code>: depends on <code>Resume_v</code>, uses the validators</li>
+</ul>
+<p>Type definitions are placed in <code>resume.atd</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> text = <span class="dt">string</span> &lt;ocaml valid=<span class="st">&quot;Resume_util.validate_some_text&quot;</span>&gt;
+
+<span class="kw">type</span> date = {
+  year : <span class="dt">int</span>;
+  month : <span class="dt">int</span>;
+  day : <span class="dt">int</span>;
+} &lt;ocaml valid=<span class="st">&quot;Resume_util.validate_date&quot;</span>&gt;
+
+<span class="kw">type</span> job = {
+  company : text;
+  title : text;
+  start_date : date;
+  ?end_date : date <span class="dt">option</span>;
+} &lt;ocaml valid=<span class="st">&quot;Resume_util.validate_job&quot;</span>&gt;
+
+<span class="kw">type</span> work_experience = job <span class="dt">list</span></code></pre></div>
+<p><code>resume_util.ml</code> contains our handwritten validators:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="ot">open</span> Resume_t
+
+<span class="kw">let</span> ascii_printable c =
+  <span class="kw">let</span> n = Char<span class="kw">.</span>code c <span class="kw">in</span>
+  n &gt;= <span class="dv">32</span> &amp;&amp; n &lt;= <span class="dv">127</span>
+
+<span class="co">(*</span>
+<span class="co">  Check that string is not empty and contains only ASCII printable</span>
+<span class="co">  characters (for the sake of the example; we use UTF-8 these days)</span>
+<span class="co">*)</span>
+<span class="kw">let</span> validate_some_text s =
+  s &lt;&gt; <span class="st">&quot;&quot;</span> &amp;&amp;
+    <span class="kw">try</span>
+      String<span class="kw">.</span>iter (<span class="kw">fun</span> c -&gt; <span class="kw">if</span> not (ascii_printable c) <span class="kw">then</span> raise <span class="dt">Exit</span>) s;
+      <span class="kw">true</span>
+    <span class="kw">with</span> <span class="dt">Exit</span> -&gt;
+      <span class="kw">false</span>
+
+<span class="co">(*</span>
+<span class="co">  Check that the combination of year, month and day exists in the</span>
+<span class="co">  Gregorian calendar.</span>
+<span class="co">*)</span>
+<span class="kw">let</span> validate_date x =
+  <span class="kw">let</span> y = x.year <span class="kw">in</span>
+  <span class="kw">let</span> m = x.month <span class="kw">in</span>
+  <span class="kw">let</span> d = x.day <span class="kw">in</span>
+  m &gt;= <span class="dv">1</span> &amp;&amp; m &lt;= <span class="dv">12</span> &amp;&amp; d &gt;= <span class="dv">1</span> &amp;&amp;
+  (<span class="kw">let</span> dmax =
+     <span class="kw">match</span> m <span class="kw">with</span>
+         <span class="dv">2</span> -&gt;
+           <span class="kw">if</span> y <span class="kw">mod</span> <span class="dv">4</span> = <span class="dv">0</span> &amp;&amp; not (y <span class="kw">mod</span> <span class="dv">100</span> = <span class="dv">0</span>) || y <span class="kw">mod</span> <span class="dv">400</span> = <span class="dv">0</span> <span class="kw">then</span> <span class="dv">29</span>
+           <span class="kw">else</span> <span class="dv">28</span>
+       | <span class="dv">1</span> | <span class="dv">3</span> | <span class="dv">5</span> | <span class="dv">7</span> | <span class="dv">8</span> | <span class="dv">10</span> | <span class="dv">12</span> -&gt; <span class="dv">31</span>
+       | _ -&gt; <span class="dv">30</span>
+   <span class="kw">in</span>
+   d &lt;= dmax)
+
+<span class="co">(* Compare dates chronologically *)</span>
+<span class="kw">let</span> compare_date a b =
+  <span class="kw">let</span> c = compare a.year b.year <span class="kw">in</span>
+  <span class="kw">if</span> c &lt;&gt; <span class="dv">0</span> <span class="kw">then</span> c
+  <span class="kw">else</span>
+    <span class="kw">let</span> c = compare a.month b.month <span class="kw">in</span>
+    <span class="kw">if</span> c &lt;&gt; <span class="dv">0</span> <span class="kw">then</span> c
+    <span class="kw">else</span> compare a.day b.day
+
+<span class="co">(* Check that the end_date, when defined, is not earlier than the start_date *)</span>
+<span class="kw">let</span> validate_job x =
+  <span class="kw">match</span> x.end_date <span class="kw">with</span>
+      <span class="dt">None</span> -&gt; <span class="kw">true</span>
+    | <span class="dt">Some</span> end_date -&gt;
+        compare_date x.start_date end_date &lt;= <span class="dv">0</span></code></pre></div>
+<p><code>resume.ml</code> uses the <code>validate_work_experience</code> function provided by the <code>Resume_v</code> module:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">let</span> check_experience x =
+  <span class="kw">let</span> is_valid = Resume_v<span class="kw">.</span>validate_work_experience x <span class="kw">in</span>
+  Printf<span class="kw">.</span>printf <span class="st">&quot;%s:</span><span class="ch">\n</span><span class="st">%s</span><span class="ch">\n</span><span class="st">&quot;</span>
+    (<span class="kw">if</span> is_valid <span class="kw">then</span> <span class="st">&quot;VALID&quot;</span> <span class="kw">else</span> <span class="st">&quot;INVALID&quot;</span>)
+    (Yojson<span class="kw">.</span>Safe<span class="kw">.</span>prettify (Resume_j<span class="kw">.</span>string_of_work_experience x))
+
+<span class="kw">let</span> () =
+  <span class="co">(* one valid date *)</span>
+  <span class="kw">let</span> valid = { Resume_t<span class="kw">.</span>year = <span class="dv">2000</span>; month = <span class="dv">2</span>; day = <span class="dv">29</span> } <span class="kw">in</span>
+  <span class="co">(* one invalid date *)</span>
+  <span class="kw">let</span> invalid = { Resume_t<span class="kw">.</span>year = <span class="dv">1900</span>; month = <span class="dv">0</span>; day = <span class="dv">0</span> } <span class="kw">in</span>
+  <span class="co">(* two more valid dates, created with Resume_v.create_date *)</span>
+  <span class="kw">let</span> date1 = { Resume_t<span class="kw">.</span>year = <span class="dv">2005</span>; month = <span class="dv">8</span>; day = <span class="dv">1</span> } <span class="kw">in</span>
+  <span class="kw">let</span> date2 = { Resume_t<span class="kw">.</span>year = <span class="dv">2006</span>; month = <span class="dv">3</span>; day = <span class="dv">22</span> } <span class="kw">in</span>
+
+  <span class="kw">let</span> job = {
+    Resume_t<span class="kw">.</span>company = <span class="st">&quot;Acme Corp.&quot;</span>;
+    title = <span class="st">&quot;Tester&quot;</span>;
+    start_date = date1;
+    end_date = <span class="dt">Some</span> date2;
+  }
+  <span class="kw">in</span>
+  <span class="kw">let</span> valid_job = { job <span class="kw">with</span> Resume_t<span class="kw">.</span>start_date = valid } <span class="kw">in</span>
+  <span class="kw">let</span> invalid_job = { job <span class="kw">with</span> Resume_t<span class="kw">.</span>end_date = <span class="dt">Some</span> invalid } <span class="kw">in</span>
+  <span class="kw">let</span> valid_experience = [ job; valid_job ] <span class="kw">in</span>
+  <span class="kw">let</span> invalid_experience = [ job; invalid_job ] <span class="kw">in</span>
+  check_experience valid_experience;
+  check_experience invalid_experience</code></pre></div>
+<p>Output:</p>
+<pre><code>VALID:
+[
+  {
+    &quot;company&quot;: &quot;Acme Corp.&quot;,
+    &quot;title&quot;: &quot;Tester&quot;,
+    &quot;start_date&quot;: { &quot;year&quot;: 2005, &quot;month&quot;: 8, &quot;day&quot;: 1 },
+    &quot;end_date&quot;: { &quot;year&quot;: 2006, &quot;month&quot;: 3, &quot;day&quot;: 22 }
+  },
+  {
+    &quot;company&quot;: &quot;Acme Corp.&quot;,
+    &quot;title&quot;: &quot;Tester&quot;,
+    &quot;start_date&quot;: { &quot;year&quot;: 2000, &quot;month&quot;: 2, &quot;day&quot;: 29 },
+    &quot;end_date&quot;: { &quot;year&quot;: 2006, &quot;month&quot;: 3, &quot;day&quot;: 22 }
+  }
+]
+INVALID:
+[
+  {
+    &quot;company&quot;: &quot;Acme Corp.&quot;,
+    &quot;title&quot;: &quot;Tester&quot;,
+    &quot;start_date&quot;: { &quot;year&quot;: 2005, &quot;month&quot;: 8, &quot;day&quot;: 1 },
+    &quot;end_date&quot;: { &quot;year&quot;: 2006, &quot;month&quot;: 3, &quot;day&quot;: 22 }
+  },
+  {
+    &quot;company&quot;: &quot;Acme Corp.&quot;,
+    &quot;title&quot;: &quot;Tester&quot;,
+    &quot;start_date&quot;: { &quot;year&quot;: 2005, &quot;month&quot;: 8, &quot;day&quot;: 1 },
+    &quot;end_date&quot;: { &quot;year&quot;: 1900, &quot;month&quot;: 0, &quot;day&quot;: 0 }
+  }
+]</code></pre>
+<p><a href="https://github.com/mjambon/atdgen-doc/src/tutorial-data/validate">Source code for this section</a></p>
+<h1 id="modularity-referring-to-type-definitions-from-another-atd-file">Modularity: referring to type definitions from another ATD file</h1>
+<p>It is possible to define types that depend on types defined in other <code>.atd</code> files. The example below is self-explanatory.</p>
+<p><code>part1.atd</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t = { x : <span class="dt">int</span>; y : <span class="dt">int</span> }</code></pre></div>
+<p><code>part2.atd</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t1 &lt;ocaml from=<span class="st">&quot;Part1&quot;</span> t=<span class="st">&quot;t&quot;</span>&gt; = abstract
+    <span class="co">(*</span>
+<span class="co">      Imports type t defined in file part1.atd.</span>
+<span class="co">      The local name is t1. Because the local name (t1) is different from the</span>
+<span class="co">      original name (t), we must specify the original name using t=.</span>
+<span class="co">    *)</span>
+
+<span class="kw">type</span> t2 = t1 <span class="dt">list</span></code></pre></div>
+<p><code>part3.atd</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> t2 &lt;ocaml from=<span class="st">&quot;Part2&quot;</span>&gt; = abstract
+
+<span class="kw">type</span> t3 = {
+  name : <span class="dt">string</span>;
+  ?data : t2 <span class="dt">option</span>;
+}</code></pre></div>
+<p><code>main.ml</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">let</span> v = {
+  Part3_t<span class="kw">.</span>name = <span class="st">&quot;foo&quot;</span>;
+  data = <span class="dt">Some</span> [
+    { Part1_t<span class="kw">.</span>x = <span class="dv">1</span>; y = <span class="dv">2</span> };
+    { Part1_t<span class="kw">.</span>x = <span class="dv">3</span>; y = <span class="dv">4</span> };
+  ]
+}
+
+<span class="kw">let</span> () =
+  Ag_util<span class="kw">.</span>Json<span class="kw">.</span>to_channel Part3_j<span class="kw">.</span>write_t3 stdout v;
+  print_newline ()</code></pre></div>
+<p>Output:</p>
+<pre><code>{&quot;name&quot;:&quot;foo&quot;,&quot;data&quot;:[{&quot;x&quot;:1,&quot;y&quot;:2},{&quot;x&quot;:3,&quot;y&quot;:4}]}</code></pre>
+<p><a href="https://github.com/mjambon/atdgen-doc/src/tutorial-data/modularity">Source code for this section</a></p>
+<h1 id="managing-json-configuration-files">Managing JSON configuration files</h1>
+<p>JSON makes a good format for configuration files because it is human-readable, easy to modify programmatically and widespread. Here is an example of how to use atdgen to manage config files.</p>
+<ul>
+<li><strong>Specifying defaults</strong> is done in the .atd file. See section <a href="#optional-fields-and-default-values">Optional fields and default values</a> for details on how to do that.</li>
+<li><strong>Auto-generating a template config file with default values</strong>: a sample value in the OCaml world needs to be created but only fields without default need to be specified.</li>
+<li><strong>Describing the format</strong> is achieved by embedding the .atd type definitions in the OCaml program and printing it out on request.</li>
+<li><strong>Loading a config file and reporting illegal fields</strong> is achieved using the JSON deserializers produced by <code>atdgen -j</code>. Option <code>-j-strict-fields</code> ensures the misspelled field names are not ignored but reported as errors.</li>
+<li><strong>Reindenting a config file</strong> is achieved by the pretty-printing function <code>Yojson.Safe.prettify</code> that takes a JSON string and returns an equivalent JSON string.</li>
+<li><strong>Showing implicit (default) settings</strong> is achieved by passing the <code>-j-defaults</code> option to <code>atdgen</code>. The OCaml config data is then serialized into JSON containing all fields, including those whose value is the default.</li>
+</ul>
+<p>The example uses the following type definitions:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> config = {
+  title : <span class="dt">string</span>;
+  ?description : <span class="dt">string</span> <span class="dt">option</span>;
+  ~timeout &lt;ocaml default=<span class="st">&quot;10&quot;</span>&gt; : <span class="dt">int</span>;
+  ~credentials : param <span class="dt">list</span>
+    &lt;ocaml valid=<span class="st">&quot;fun l -&gt;</span>
+<span class="st">                    l &lt;&gt; [] || failwith </span><span class="ch">\&quot;</span><span class="st">missing credentials</span><span class="ch">\&quot;</span><span class="st">&quot;</span>&gt;;
+}
+
+<span class="kw">type</span> param = {
+  name : <span class="dt">string</span>
+    &lt;ocaml valid=<span class="st">&quot;fun s -&gt; s &lt;&gt; </span><span class="ch">\&quot;\&quot;</span><span class="st">&quot;</span>&gt;;
+  key : <span class="dt">string</span>
+    &lt;ocaml valid=<span class="st">&quot;fun s -&gt; String.length s = 16&quot;</span>&gt;;
+}</code></pre></div>
+<p>Our program will perform the following actions:</p>
+<pre><code>$ ./config -template
+{
+  &quot;title&quot;: &quot;&quot;,
+  &quot;timeout&quot;: 10,
+  &quot;credentials&quot;: [ { &quot;name&quot;: &quot;foo&quot;, &quot;key&quot;: &quot;0123456789abcdef&quot; } ]
+}
+
+$ ./config -format
+type config = {
+  title : string;
+  ?description : string option;
+  ~timeout &lt;ocaml default=&quot;10&quot;&gt; : int;
+  ~credentials : param list
+    &lt;ocaml valid=&quot;fun l -&gt;
+                    l &lt;&gt; [] || failwith \&quot;missing credentials\&quot;&quot;&gt;;
+}
+
+type param = {
+  name : string
+    &lt;ocaml valid=&quot;fun s -&gt; s &lt;&gt; \&quot;\&quot;&quot;&gt;;
+  key : string
+    &lt;ocaml valid=&quot;fun s -&gt; String.length s = 16&quot;&gt;;
+}
+
+$ cat sample-config.json
+{
+  &quot;title&quot;: &quot;Example&quot;,
+  &quot;credentials&quot;: [
+    {
+      &quot;name&quot;: &quot;joeuser&quot;,
+      &quot;key&quot;: &quot;db7c0877bdef3016&quot;
+    },
+    {
+      &quot;name&quot;: &quot;tester&quot;,
+      &quot;key&quot;: &quot;09871ff387ac2b10&quot;
+    }
+  ]
+}
+
+$ ./config -validate sample-config.json
+{
+  &quot;title&quot;: &quot;Example&quot;,
+  &quot;timeout&quot;: 10,
+  &quot;credentials&quot;: [
+    { &quot;name&quot;: &quot;joeuser&quot;, &quot;key&quot;: &quot;db7c0877bdef3016&quot; },
+    { &quot;name&quot;: &quot;tester&quot;, &quot;key&quot;: &quot;09871ff387ac2b10&quot; }
+  ]
+}</code></pre>
+<p>This is our <code>demo.sh</code> script that builds and runs our example program called <code>config</code>:</p>
+<pre><code>#! /bin/sh -e
+
+set -x
+
+# Embed the contents of the .atd file into our OCaml program
+echo &#39;let contents = &quot;\&#39; &gt; config_atd.ml
+sed -e &#39;s/\([\\&quot;]\)/\\\1/g&#39; config.atd &gt;&gt; config_atd.ml
+echo &#39;&quot;&#39; &gt;&gt; config_atd.ml
+
+# Derive OCaml type definitions from .atd file
+atdgen -t config.atd
+
+# Derive JSON-related functions from .atd file
+atdgen -j -j-defaults -j-strict-fields config.atd
+
+# Derive validator from .atd file
+atdgen -v config.atd
+
+# Compile the OCaml program
+ocamlfind ocamlopt -o config \
+  config_t.mli config_t.ml config_j.mli config_j.ml config_v.mli config_v.ml \
+  config_atd.ml config.ml -package atdgen -linkpkg
+
+# Output a sample config
+./config -template
+
+# Print the original type definitions
+./config -format
+
+# Fail to validate an invalid config file
+./config -validate bad-config1.json || :
+
+# Fail to validate another invalid config file (using custom validators)
+./config -validate bad-config3.json || :
+
+# Validate, inject missing defaults and pretty-print
+./config -validate sample-config.json</code></pre>
+<p>This is the hand-written OCaml program. It can be used as a start point for a real-world program using a JSON config file:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="ot">open</span> Printf
+
+<span class="kw">let</span> param_template =
+  <span class="co">(* Sample item used to populate the template config file *)</span>
+  {
+    Config_v<span class="kw">.</span>name = <span class="st">&quot;foo&quot;</span>;
+    key = <span class="st">&quot;0123456789abcdef&quot;</span>
+  }
+
+<span class="kw">let</span> config_template =
+  <span class="co">(*</span>
+<span class="co">    Records can be conveniently created using functions generated by</span>
+<span class="co">    &quot;atdgen -v&quot;.</span>
+<span class="co">    Here we use Config_v.create_config to create a record of type</span>
+<span class="co">    Config_t.config. The big advantage over creating the record </span>
+<span class="co">    directly using the record notation {...} is that we don&#39;t have to</span>
+<span class="co">    specify default values (such as timeout in this example).</span>
+<span class="co">  *)</span>
+  Config_v<span class="kw">.</span>create_config ~title:<span class="st">&quot;&quot;</span> ~credentials: [param_template] ()
+
+<span class="kw">let</span> make_json_template () =
+  <span class="co">(* Thanks to the -j-defaults flag passed to atdgen, even default</span>
+<span class="co">     fields will be printed out *)</span>
+  <span class="kw">let</span> compact_json = Config_j<span class="kw">.</span>string_of_config config_template <span class="kw">in</span>
+  Yojson<span class="kw">.</span>Safe<span class="kw">.</span>prettify compact_json
+
+<span class="kw">let</span> print_template () =
+  print_endline (make_json_template ())
+
+<span class="kw">let</span> print_format () =
+  print_string Config_atd<span class="kw">.</span>contents
+
+<span class="kw">let</span> validate fname =
+  <span class="kw">let</span> x =
+    <span class="kw">try</span>
+      <span class="co">(* Read config data structure from JSON file *)</span>
+      <span class="kw">let</span> x = Ag_util<span class="kw">.</span>Json<span class="kw">.</span>from_file Config_j<span class="kw">.</span>read_config fname <span class="kw">in</span>
+      <span class="co">(* Call the validators specified by &lt;ocaml valid=...&gt; *)</span>
+      <span class="kw">if</span> not (Config_v<span class="kw">.</span>validate_config x) <span class="kw">then</span>
+        failwith <span class="st">&quot;Some fields are invalid&quot;</span>
+      <span class="kw">else</span>
+        x
+    <span class="kw">with</span> e -&gt;
+      <span class="co">(* Print decent error message and exit *)</span>
+      <span class="kw">let</span> msg =
+        <span class="kw">match</span> e <span class="kw">with</span>
+            <span class="dt">Failure</span> s
+          | Yojson<span class="kw">.</span><span class="dt">Json_error</span> s -&gt; s
+          | e -&gt; Printexc<span class="kw">.</span>to_string e
+      <span class="kw">in</span>
+      eprintf <span class="st">&quot;Error: %s</span><span class="ch">\n</span><span class="st">%!&quot;</span> msg;
+      exit <span class="dv">1</span>
+  <span class="kw">in</span>
+  <span class="co">(* Convert config to compact JSON and pretty-print it.</span>
+<span class="co">     ~std:true means that the output will not use extended syntax for</span>
+<span class="co">     variants and tuples but only standard JSON. *)</span>
+  <span class="kw">let</span> json = Yojson<span class="kw">.</span>Safe<span class="kw">.</span>prettify ~std:<span class="kw">true</span> (Config_j<span class="kw">.</span>string_of_config x) <span class="kw">in</span>
+  print_endline json
+
+<span class="kw">type</span> action = <span class="dt">Template</span> | <span class="dt">Format</span> | <span class="dt">Validate</span> <span class="kw">of</span> <span class="dt">string</span>
+
+<span class="kw">let</span> main () =
+  <span class="kw">let</span> action = <span class="dt">ref</span> <span class="dt">Template</span> <span class="kw">in</span>
+  <span class="kw">let</span> options = [
+    <span class="st">&quot;-template&quot;</span>, Arg<span class="kw">.</span><span class="dt">Unit</span> (<span class="kw">fun</span> () -&gt; action := <span class="dt">Template</span>),
+    <span class="st">&quot;</span>
+<span class="st">          prints a sample configuration file&quot;</span>;
+
+    <span class="st">&quot;-format&quot;</span>, Arg<span class="kw">.</span><span class="dt">Unit</span> (<span class="kw">fun</span> () -&gt; action := <span class="dt">Format</span>),
+    <span class="st">&quot;</span>
+<span class="st">          prints the format specification of the config files (atd format)&quot;</span>;
+
+    <span class="st">&quot;-validate&quot;</span>, Arg<span class="kw">.</span><span class="dt">String</span> (<span class="kw">fun</span> s -&gt; action := <span class="dt">Validate</span> s),
+    <span class="st">&quot;&lt;CONFIG FILE&gt;</span>
+<span class="st">          reads a config file, validates it, adds default values</span>
+<span class="st">          and prints the config nicely to stdout&quot;</span>;
+  ]
+  <span class="kw">in</span>
+  <span class="kw">let</span> usage_msg = sprintf <span class="st">&quot;</span><span class="ch">\</span>
+<span class="st">Usage: %s [-template|-format|-validate ...]</span>
+<span class="st">Demonstration of how to manage JSON configuration files with atdgen.</span>
+<span class="st">&quot;</span>
+    Sys<span class="kw">.</span>argv.(<span class="dv">0</span>)
+  <span class="kw">in</span>
+  <span class="kw">let</span> anon_fun s = eprintf <span class="st">&quot;Invalid command parameter %S</span><span class="ch">\n</span><span class="st">%!&quot;</span> s; exit <span class="dv">1</span> <span class="kw">in</span>
+  Arg<span class="kw">.</span>parse options anon_fun usage_msg;
+
+  <span class="kw">match</span> !action <span class="kw">with</span>
+      <span class="dt">Template</span> -&gt; print_template ()
+    | <span class="dt">Format</span> -&gt; print_format ()
+    | <span class="dt">Validate</span> s -&gt; validate s
+
+<span class="kw">let</span> () = main ()</code></pre></div>
+<p>The full source code for this section with examples can be inspected and <a href="https://github.com/mjambon/atdgen-doc/src/tutorial-data/config-file">downloaded here</a>.</p>
+<h1 id="integration-with-ocamldoc">Integration with ocamldoc</h1>
+<p>Ocamldoc is a tool that comes with the core OCaml distribution. It uses comments within <code>(**</code> and <code>*)</code> to produce hyperlinked documentation (HTML) of module signatures.</p>
+<p>Atdgen can produce <code>.mli</code> files with comments in the syntax supported by ocamldoc but regular ATD comments within <code>(*</code> and <code>*)</code> are always discarded by atdgen. Instead, <code>&lt;doc text=&quot;...&quot;&gt;</code> must be used and placed after the element they describe. The contents of the text field must be UTF8-encoded.</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> point = {
+  x : float;
+  y : float;
+  ~z
+    &lt;doc text=<span class="st">&quot;Optional depth, its default value is {{0.0}}.&quot;</span>&gt;
+    : float;
+}
+  &lt;doc text=<span class="st">&quot;Point with optional 3rd dimension.</span>
+
+<span class="st">OCaml example:</span>
+<span class="st">{{{</span>
+<span class="st">let p =</span>
+<span class="st">  { x = 0.5; y = 1.0; z = 0. }</span>
+<span class="st">}}}</span>
+<span class="st">&quot;</span>&gt;</code></pre></div>
+<p>is converted into the following <code>.mli</code> file with ocamldoc-compatible comments:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(**</span>
+<span class="co">  Point with optional 3rd dimension.</span>
+
+<span class="co">  OCaml example:</span>
+
+<span class="co">{v</span>
+<span class="co">let p =</span>
+<span class="co">  \{ x = 0.5; y = 1.0; z = 0. \}</span>
+<span class="co">v}</span>
+<span class="co">*)</span>
+<span class="kw">type</span> point = {
+  x: float;
+  y: float;
+  z: float <span class="co">(** Optional depth, its default value is [0.0]. *)</span>
+}</code></pre></div>
+<p>The only two forms of markup supported by <code>&lt;doc text=&quot;...&quot;&gt;</code> are <code>{{</code> ... <code>}}</code> for inline code and <code>{{{</code> ... <code>}}}</code> for a block of preformatted code.</p>
+<h1 id="integration-with-build-systems">Integration with build systems</h1>
+<h3 id="omake">OMake</h3>
+<p>We provide an <a href="https://github.com/mjambon/atdgen-omake">Atdgen plugin</a> for <a href="http://omake.metaprl.org">OMake</a>. It simplifies the compilation rules to a minimum.</p>
+<p>The plugin consists of a self-documented file to copy into a project's root. The following is a sample <code>OMakefile</code> for a project using JSON and five source files (<code>foo.atd</code>, <code>foo.ml</code>, <code>bar.atd</code>, <code>bar.ml</code> and <code>main.ml</code>):</p>
+<pre><code>include Atdgen
+  # requires file Atdgen.om
+
+OCAMLFILES = foo_t foo_j foo bar_t bar_j bar main
+  # correspond to the OCaml modules we want to build
+
+Atdgen(foo bar, -j-std)
+OCamlProgram(foobar, $(OCAMLFILES))
+
+.DEFAULT: foobar.opt
+
+.PHONY: clean
+clean:
+  rm -f *.cm[ioxa] *.cmx[as] *.[oa] *.opt *.run *~
+  rm -f $(ATDGEN_OUTFILES)</code></pre>
+<p>Running <code>omake</code> builds the native code executable <code>foobar.opt</code>.</p>
+<p><code>omake clean</code> removes all the products of compilation including the <code>.mli</code> and <code>.ml</code> produced by <code>atdgen</code>.</p>
+<h3 id="gnu-make">GNU Make</h3>
+<p>We provide <a href="https://github.com/mjambon/atdgen-make"><code>Atdgen.mk</code></a>, a generic makefile that defines the dependencies and rules for generating OCaml <code>.mli</code> and <code>.ml</code> files from <code>.atd</code> files containing type definitions. The <code>Atdgen.mk</code> file contains its own documentation.</p>
+<p>Here is a sample <code>Makefile</code> that takes advantage of <a href="http://mmottl.github.io/ocaml-makefile/"><code>OCamlMakefile</code></a>:</p>
+<pre><code>.PHONY: default
+default: opt
+
+ATDGEN_SOURCES = foo.atd bar.atd
+ATDGEN_FLAGS = -j-std
+include Atdgen.mk
+
+SOURCES = \
+  foo_t.mli foo_t.ml foo_j.mli foo_j.ml \
+  bar_t.mli bar_t.ml bar_j.mli bar_j.ml \
+  hello.ml
+RESULT = hello
+PACKS = atdgen
+# &quot;include OCamlMakefile&quot; must come after defs for SOURCES, RESULT, PACKS, etc.
+include OCamlMakefile
+
+.PHONY: sources opt all
+sources: $(SOURCES)
+opt: sources
+        $(MAKE) native-code
+all: sources
+        $(MAKE) byte-code</code></pre>
+<p><code>make</code> alone builds a native code executable from source files <code>foo.atd</code>, <code>bar.atd</code> and <code>hello.ml</code>. <code>make clean</code> removes generated files. <code>make all</code> builds a bytecode executable. In addition to <code>native-code</code>, <code>byte-code</code> and <code>clean</code>, <code>OCamlMakefile</code> provides a number of other targets and options which are documented in <code>OCamlMakefile</code>'s README.</p>
+<h3 id="ocamlbuild">Ocamlbuild</h3>
+<p>There is an <a href="https://github.com/hcarty/ocamlbuild-plugins/blob/master/myatdgen.ml">atdgen plugin for ocamlbuild</a>.</p>
+<h1 id="dealing-with-untypable-json">Dealing with untypable JSON</h1>
+<p>Sometimes we have to deal with JSON data that cannot be described using type definitions. In such case, we can represent the data as its JSON abstract syntax tree (AST), which lets the user inspect it at runtime.</p>
+<p>Let's consider a list of JSON objects for which we don't know the type definitions, but somehow some other system knows how to deal with such data. Here is such data:</p>
+<pre><code>[
+  {
+    &quot;label&quot;: &quot;flower&quot;,
+    &quot;value&quot;: {
+      &quot;petals&quot;: [12, 45, 83.5555],
+      &quot;water&quot;: &quot;a340bcf02e&quot;
+    }
+  },
+  {
+    &quot;label&quot;: &quot;flower&quot;,
+    &quot;value&quot;: {
+      &quot;petals&quot;: &quot;undefined&quot;,
+      &quot;fold&quot;: null,
+      &quot;water&quot;: 0
+    }
+  },
+  { &quot;labels&quot;: [&quot;fork&quot;, &quot;scissors&quot;],
+    &quot;value&quot;: [ 8, 8 ]
+  }
+]</code></pre>
+<p>Hopefully this means something for someone. We are going to assume that each object has a <code>value</code> field of an unknown type, and may have a field <code>label</code> or a field <code>labels</code> of type <code>string</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* File untypable.atd *)</span>
+
+<span class="kw">type</span> json &lt;ocaml <span class="ot">module</span>=<span class="st">&quot;Yojson.Safe&quot;</span>&gt; = abstract
+  <span class="co">(* uses type Yojson.Safe.json,</span>
+<span class="co">     with the functions Yojson.Safe.write_json</span>
+<span class="co">     and Yojson.Safe.read_json *)</span>
+
+<span class="kw">type</span> obj_list = obj <span class="dt">list</span>
+
+<span class="kw">type</span> obj = {
+  ?label: <span class="dt">string</span> <span class="dt">option</span>;
+  ?labels: <span class="dt">string</span> <span class="dt">list</span> <span class="dt">option</span>;
+  value: json
+}</code></pre></div>
+<p>It is possible to give a different name than <code>json</code> to the type of the JSON AST, but then the name of the type used in the original module must be provided in the annotation, i.e.:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> raw_json &lt;ocaml <span class="ot">module</span>=<span class="st">&quot;Yojson.Safe&quot;</span> t=<span class="st">&quot;json&quot;</span>&gt; = abstract
+  <span class="co">(* uses type Yojson.Safe.json,</span>
+<span class="co">     with the functions Yojson.Safe.write_json</span>
+<span class="co">     and Yojson.Safe.read_json *)</span>
+
+<span class="kw">type</span> obj_list = obj <span class="dt">list</span>
+
+<span class="kw">type</span> obj = {
+  ?label: <span class="dt">string</span> <span class="dt">option</span>;
+  ?labels: <span class="dt">string</span> <span class="dt">list</span> <span class="dt">option</span>;
+  value: raw_json
+}</code></pre></div>
+<p>Compile the example with:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">atdgen</span> -t untypable.atd
+$ <span class="kw">atdgen</span> -j -j-std untypable.atd
+$ <span class="kw">ocamlfind</span> ocamlc -a -o untypable.cma -package atdgen \
+    untypable_t.mli untypable_t.ml untypable_j.mli untypable_j.ml</code></pre></div>
+<p>Test the example with your favorite OCaml toplevel (<code>ocaml</code> or <code>utop</code>):</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml">$ utop
+# #use <span class="st">&quot;topfind&quot;</span>;;
+# #require <span class="st">&quot;atdgen&quot;</span>;;
+# #load <span class="st">&quot;untypable.cma&quot;</span>;;
+# Ag_util<span class="kw">.</span>Json<span class="kw">.</span>from_channel Untypable_j<span class="kw">.</span>read_obj_list stdin;;
+[
+  {
+    <span class="st">&quot;label&quot;</span>: <span class="st">&quot;flower&quot;</span>,
+    <span class="st">&quot;value&quot;</span>: {
+      <span class="st">&quot;petals&quot;</span>: [<span class="dv">12</span>, <span class="dv">45</span>, <span class="fl">83.5555</span>],
+      <span class="st">&quot;water&quot;</span>: <span class="st">&quot;a340bcf02e&quot;</span>
+    }
+  },
+  {
+    <span class="st">&quot;label&quot;</span>: <span class="st">&quot;flower&quot;</span>,
+    <span class="st">&quot;value&quot;</span>: {
+      <span class="st">&quot;petals&quot;</span>: <span class="st">&quot;undefined&quot;</span>,
+      <span class="st">&quot;fold&quot;</span>: null,
+      <span class="st">&quot;water&quot;</span>: <span class="dv">0</span>
+    }
+  },
+  { <span class="st">&quot;labels&quot;</span>: [<span class="st">&quot;fork&quot;</span>, <span class="st">&quot;scissors&quot;</span>],
+    <span class="st">&quot;value&quot;</span>: [ <span class="dv">8</span>, <span class="dv">8</span> ]
+  }
+]
+- : Untypable_t<span class="kw">.</span>obj_list =
+[{Untypable_t<span class="kw">.</span>label = <span class="dt">Some</span> <span class="st">&quot;flower&quot;</span>; labels = <span class="dt">None</span>;
+  value =
+   <span class="dt">`Assoc</span>
+     [(<span class="st">&quot;petals&quot;</span>, <span class="dt">`List</span> [<span class="dt">`Int</span> <span class="dv">12</span>; <span class="dt">`Int</span> <span class="dv">45</span>; <span class="dt">`Float</span> <span class="fl">83.5555</span>]);
+      (<span class="st">&quot;water&quot;</span>, <span class="dt">`String</span> <span class="st">&quot;a340bcf02e&quot;</span>)]};
+ {Untypable_t<span class="kw">.</span>label = <span class="dt">Some</span> <span class="st">&quot;flower&quot;</span>; labels = <span class="dt">None</span>;
+  value =
+   <span class="dt">`Assoc</span> [(<span class="st">&quot;petals&quot;</span>, <span class="dt">`String</span> <span class="st">&quot;undefined&quot;</span>);
+           (<span class="st">&quot;fold&quot;</span>, <span class="dt">`Null</span>);
+           (<span class="st">&quot;water&quot;</span>, <span class="dt">`Int</span> <span class="dv">0</span>)]};
+ {Untypable_t<span class="kw">.</span>label = <span class="dt">None</span>; labels = <span class="dt">Some</span> [<span class="st">&quot;fork&quot;</span>; <span class="st">&quot;scissors&quot;</span>];
+  value = <span class="dt">`List</span> [<span class="dt">`Int</span> <span class="dv">8</span>; <span class="dt">`Int</span> <span class="dv">8</span>]}]</code></pre></div>
+</body>
+</html>

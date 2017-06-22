@@ -1,18 +1,18 @@
 .PHONY: default clean
 
-ifndef BRANCH
-  GITBRANCH = $(shell git branch \
-            | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/' )
-  ifneq ($(GITBRANCH),gh-pages)
-    BRANCH = master
-  else
-    BRANCH = $(GITBRANCH)
-  endif
-endif
+PAGES = \
+  atd-syntax.html \
+  atdgen.css \
+  atdgen.html \
+  biniou-format.txt \
+  index.html \
+  tutorial.html
 
 default:
-	$(MAKE) -f Makefile.$(BRANCH)
+	$(MAKE) -C src
+	mkdir -p docs
+	cd html && cp $(PAGES) ../docs
 
 clean:
-	$(MAKE) -f Makefile.$(BRANCH) clean
 	rm -f *~
+	$(MAKE) -C src clean
