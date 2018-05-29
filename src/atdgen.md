@@ -1,5 +1,5 @@
 % atdgen(1) user manual
-% June 21, 2017
+% May 28, 2018
 
 [Home](https://mjambon.github.io/atdgen-doc/)
 
@@ -417,7 +417,7 @@ type profile = Example_t.profile = {
 }
 
 val validate_gender :
-  Ag_util.Validation.path -> gender -> Ag_util.Validation.error option
+  Atdgen_runtime.Util.Validation.path -> gender -> Atdgen_runtime.Util.Validation.error option
   (** Validate a value of type {!gender}. *)
 
 val create_date :
@@ -428,7 +428,7 @@ val create_date :
   (** Create a record of type {!date}. *)
 
 val validate_date :
-  Ag_util.Validation.path -> date -> Ag_util.Validation.error option
+  Atdgen_runtime.Util.Validation.path -> date -> Atdgen_runtime.Util.Validation.error option
   (** Validate a value of type {!date}. *)
 
 val create_profile :
@@ -444,7 +444,7 @@ val create_profile :
   (** Create a record of type {!profile}. *)
 
 val validate_profile :
-  Ag_util.Validation.path -> profile -> Ag_util.Validation.error option
+  Atdgen_runtime.Util.Validation.path -> profile -> Atdgen_runtime.Util.Validation.error option
   (** Validate a value of type {!profile}. *)
 ```
 
@@ -683,6 +683,9 @@ type unixtime = float <json repr="int">
 
 ### Field '`tag_field`' ###
 
+Superseded by `<json adapter.ocaml="...">`.
+Available since atdgen 1.5.0 and yojson 1.2.0 until atdgen 1.13.
+
 This feature makes it possible to read JSON objects representing
 variants that use one field for the tag and another field for the
 untagged value of the specific type associated with that tag.
@@ -704,9 +707,10 @@ covers JSON objects that have an extra field `kind` which holds either
 `"A"` or `"b"`. Valid JSON values of type `t` include
 `{ "kind": "A" }` and `{ "kind": "b", "value": 123 }`.
 
-Available since atdgen 1.5.0 and yojson 1.2.0.
-
 ### Field '`untyped`' ###
+
+Superseded by `<json open_enum>` and `<json adapter.ocaml="...">`.
+Available since atdgen 1.10.0 and atd 1.2.0 until atdgen 1.13.
 
 This flag enables parsing of arbitrary variants without prior knowledge
 of their type. It is useful for constructing flexible parsers for
@@ -735,7 +739,92 @@ previous section, `v` will parse and print `{ "kind": "foo" }` and `{
 "kind": "bar", "value": [null] }` as well as the examples previously
 given.
 
-Available since atdgen 1.10.0 and atd 1.2.0.
+### Field '`open_enum`' ###
+
+Where an enum (finite set of strings) is expected, this flag allows
+unexpected strings to be kept under a catch-all constructor rather
+than producing an error.
+
+Position: on a variant type comprising exactly one constructor with an
+argument. The type of that argument must be `string`. All other
+constructors must have no arguments.
+
+Value: none
+
+For example:
+
+```ocaml
+type language = [
+  | English
+  | Chinese
+  | Other of string
+] <json open_enum>
+```
+
+maps the json string `"Chinese"` to the OCaml value `` `Chinese`` and
+maps `"French"` to `` `Other "French"``.
+
+Available since atdgen 2.0.
+
+### Field 'adapter.ocaml' ###
+
+Json adapters are a mechanism for rearranging json data on-the-fly, so
+as to make them compatible with ATD. The programmer must provide
+an OCaml module that provides converters between the original json
+representation and the ATD-compatible representation. The signature
+of the user-provided module must be equal to
+`Atdgen_runtime.Json_adapter.S`, which is:
+
+```ocaml
+sig
+  (** Convert from original json to ATD-compatible json *)
+  val normalize : Yojson.Safe.json -> Yojson.Safe.json
+
+  (** Convert from ATD-compatible json to original json *)
+  val restore : Yojson.Safe.json -> Yojson.Safe.json
+end
+```
+
+The type `Yojson.Safe.json` is the type of parsed JSON as provided
+by the yojson library.
+
+Position: on a variant type or on a record type.
+
+Value: an OCaml module identifier. Note that
+`Atdgen_runtime.Json_adapter` provides a few modules and functors
+that are ready to use. Users are however encouraged to write their own
+to suit their needs.
+
+Sample ATD definitions:
+
+```ocaml
+type document = [
+  | Image of image
+  | Text of text
+] <json adapter.ocaml="Atdgen_runtime.Json_adapter.Type_field">
+
+type image = {
+  url: string;
+}
+
+type text = {
+  title: string;
+  body: string;
+}
+```
+
+ATD-compliant json values:
+* `["Image", {"url": "https://example.com/ocean123.jpg"}]`
+* `["Text", {"title": "Cheeses Around the World", "body": "..."}]`
+
+Json values given by some API:
+* `{"type": "Image", "url": "https://example.com/ocean123.jpg"}`
+* `{"type": "Text", "title": "Cheeses Around the World", "body": "..."}`
+
+The json adapter `Type_field` that ships with the atdgen runtime
+takes care of converting between these two forms. For information on
+how to write your own adapter, please consult the documentation for
+the yojson library.
 
 Section '`biniou`'
 ------------------
@@ -1293,7 +1382,7 @@ Semantics: `atdgen -v` produces for each type named
 _t_ a function `validate_`_t_:
 
 ```ocaml
-val validate_t : Ag_util.Validation.path -> t -> Ag_util.Validation.error option
+val validate_t : Atdgen_runtime.Util.Validation.path -> t -> Atdgen_runtime.Util.Validation.error option
 ```
 
 Such a function returns `None` if and only if the value and all of its
@@ -1323,7 +1412,7 @@ match validate_point [] { x = 1; y = 0; z = 1 } with
 | None -> ()
 | Some e ->
     Printf.eprintf "Error: %s\n%!"
-      (Ag_util.Validation.string_of_error e)
+      (Atdgen_runtime.Util.Validation.string_of_error e)
 ```
 
 The above code prints the following error message:
@@ -1350,7 +1439,7 @@ Semantics: `atdgen -v` produces for each type named
 _t_ a function `validate_`_t_:
 
 ```ocaml
-val validate_t : Ag_util.Validation.path -> t -> Ag_util.Validation.error option
+val validate_t : Atdgen_runtime.Util.Validation.path -> t -> Atdgen_runtime.Util.Validation.error option
 ```
 
 Such a function returns `None` if and only if the value and all of its
@@ -1365,7 +1454,7 @@ type positive = int <ocaml validator="
     if x > 0 then None
     else
       Some (
-        Ag_util.Validation.error
+        Atdgen_runtime.Util.Validation.error
           ~msg: (\"Not a positive integer: \" ^ string_of_int x)
           path
       )
@@ -1387,7 +1476,7 @@ match Toto_v.validate_point [] { x = 1; y = 0; z = 1 } with
 | None -> ()
 | Some e ->
     Printf.eprintf "Error: %s\n%!"
-      (Ag_util.Validation.string_of_error e)
+      (Atdgen_runtime.Util.Validation.string_of_error e)
 ```
 
 results in printing:
@@ -1552,7 +1641,7 @@ file `ocamldoc_example_t.mli` with ocamldoc-compliant comments:
 
 (**
   The type of a point. A value [p] can be created as follows:
-
+  
 {v
 let p = \{ x = 1.2; y = 5.0 \}
 v}
