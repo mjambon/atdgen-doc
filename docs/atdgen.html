@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="generator" content="pandoc">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <meta name="author" content="June 21, 2017">
+  <meta name="author" content="May 28, 2018">
   <title>atdgen(1) user manual</title>
   <style type="text/css">code{white-space: pre;}</style>
   <style type="text/css">
@@ -52,7 +52,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <body>
 <header>
 <h1 class="title">atdgen(1) user manual</h1>
-<h2 class="author">June 21, 2017</h2>
+<h2 class="author">May 28, 2018</h2>
 </header>
 <nav id="TOC">
 <ul>
@@ -73,6 +73,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#field-repr">Field '<code>repr</code>'</a></li>
 <li><a href="#field-tag_field">Field '<code>tag_field</code>'</a></li>
 <li><a href="#field-untyped">Field '<code>untyped</code>'</a></li>
+<li><a href="#field-open_enum">Field '<code>open_enum</code>'</a></li>
+<li><a href="#field-adapter.ocaml">Field '<code>adapter.ocaml</code>'</a></li>
 </ul></li>
 <li><a href="#section-biniou">Section '<code>biniou</code>'</a><ul>
 <li><a href="#field-repr-1">Field '<code>repr</code>'</a></li>
@@ -410,7 +412,7 @@ $ atdgen -v example.atd</code></pre>
 }
 
 <span class="kw">val</span> validate_gender :
-  Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; gender -&gt; Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span>
+  Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; gender -&gt; Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span>
   <span class="co">(** Validate a value of type {!gender}. *)</span>
 
 <span class="kw">val</span> create_date :
@@ -421,7 +423,7 @@ $ atdgen -v example.atd</code></pre>
   <span class="co">(** Create a record of type {!date}. *)</span>
 
 <span class="kw">val</span> validate_date :
-  Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; date -&gt; Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span>
+  Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; date -&gt; Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span>
   <span class="co">(** Validate a value of type {!date}. *)</span>
 
 <span class="kw">val</span> create_profile :
@@ -437,7 +439,7 @@ $ atdgen -v example.atd</code></pre>
   <span class="co">(** Create a record of type {!profile}. *)</span>
 
 <span class="kw">val</span> validate_profile :
-  Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; profile -&gt; Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span>
+  Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; profile -&gt; Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span>
   <span class="co">(** Validate a value of type {!profile}. *)</span></code></pre></div>
 <h1 id="default-type-mapping">Default type mapping</h1>
 <p>The following table summarizes the default mapping between ATD types and OCaml, biniou and JSON data types. For each language more representations are available and are detailed in the next section of this manual.</p>
@@ -636,6 +638,7 @@ $ atdgen -v example.atd</code></pre>
 <p>Example:</p>
 <div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> unixtime = float &lt;json repr=<span class="st">&quot;int&quot;</span>&gt;</code></pre></div>
 <h3 id="field-tag_field">Field '<code>tag_field</code>'</h3>
+<p>Superseded by <code>&lt;json adapter.ocaml=&quot;...&quot;&gt;</code>. Available since atdgen 1.5.0 and yojson 1.2.0 until atdgen 1.13.</p>
 <p>This feature makes it possible to read JSON objects representing variants that use one field for the tag and another field for the untagged value of the specific type associated with that tag.</p>
 <p>Position: on a record field name, for a field holding a variant type.</p>
 <p>Value: name of another JSON field which holds the string representing the constructor for the variant.</p>
@@ -644,8 +647,8 @@ $ atdgen -v example.atd</code></pre>
   value &lt;json tag_field=<span class="st">&quot;kind&quot;</span>&gt;: [ <span class="dt">A</span> | <span class="dt">B</span> &lt;json name=<span class="st">&quot;b&quot;</span>&gt; <span class="kw">of</span> <span class="dt">int</span> ];
 }</code></pre></div>
 <p>covers JSON objects that have an extra field <code>kind</code> which holds either <code>&quot;A&quot;</code> or <code>&quot;b&quot;</code>. Valid JSON values of type <code>t</code> include <code>{ &quot;kind&quot;: &quot;A&quot; }</code> and <code>{ &quot;kind&quot;: &quot;b&quot;, &quot;value&quot;: 123 }</code>.</p>
-<p>Available since atdgen 1.5.0 and yojson 1.2.0.</p>
 <h3 id="field-untyped">Field '<code>untyped</code>'</h3>
+<p>Superseded by <code>&lt;json open_enum&gt;</code> and <code>&lt;json adapter.ocaml=&quot;...&quot;&gt;</code>. Available since atdgen 1.10.0 and atd 1.2.0 until atdgen 1.13.</p>
 <p>This flag enables parsing of arbitrary variants without prior knowledge of their type. It is useful for constructing flexible parsers for extensible serializations. <code>json untyped</code> is compatible with regular variants, <code>json tag_field</code> variants, default values, and implicit <code>tag_field</code> constructors.</p>
 <p>Position: on a variant constructor with argument type <code>string * json option</code> (at most one per variant type)</p>
 <p>Value: none, <code>true</code> or <code>false</code></p>
@@ -656,7 +659,55 @@ $ atdgen -v example.atd</code></pre>
   | <span class="dt">Unknown</span> &lt;json untyped&gt; <span class="kw">of</span> (<span class="dt">string</span> * json <span class="dt">option</span>)
 ]</code></pre></div>
 <p>will parse and print <code>&quot;A&quot;</code>, <code>[&quot;b&quot;, 0]</code>, <code>&quot;foo&quot;</code>, and <code>[&quot;bar&quot;, [null]]</code> in a regular variant context. In the <code>tag_field</code> type <code>t</code> context in the previous section, <code>v</code> will parse and print <code>{ &quot;kind&quot;: &quot;foo&quot; }</code> and <code>{ &quot;kind&quot;: &quot;bar&quot;, &quot;value&quot;: [null] }</code> as well as the examples previously given.</p>
-<p>Available since atdgen 1.10.0 and atd 1.2.0.</p>
+<h3 id="field-open_enum">Field '<code>open_enum</code>'</h3>
+<p>Where an enum (finite set of strings) is expected, this flag allows unexpected strings to be kept under a catch-all constructor rather than producing an error.</p>
+<p>Position: on a variant type comprising exactly one constructor with an argument. The type of that argument must be <code>string</code>. All other constructors must have no arguments.</p>
+<p>Value: none</p>
+<p>For example:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> language = [
+  | <span class="dt">English</span>
+  | <span class="dt">Chinese</span>
+  | <span class="dt">Other</span> <span class="kw">of</span> <span class="dt">string</span>
+] &lt;json open_enum&gt;</code></pre></div>
+<p>maps the json string <code>&quot;Chinese&quot;</code> to the OCaml value <code>`Chinese</code> and maps <code>&quot;French&quot;</code> to <code>`Other &quot;French&quot;</code>.</p>
+<p>Available since atdgen 2.0.</p>
+<h3 id="field-adapter.ocaml">Field '<code>adapter.ocaml</code>'</h3>
+<p>Json adapters are a mechanism for rearranging json data on-the-fly, so as to make them compatible with ATD. The programmer must provide an OCaml module that provides converters between the original json representation and the ATD-compatible representation. The signature of the user-provided module must be equal to <code>Atdgen_runtime.Json_adapter.S</code>, which is:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">sig</span>
+  <span class="co">(** Convert from original json to ATD-compatible json *)</span>
+  <span class="kw">val</span> normalize : Yojson<span class="kw">.</span>Safe<span class="kw">.</span>json -&gt; Yojson<span class="kw">.</span>Safe<span class="kw">.</span>json
+
+  <span class="co">(** Convert from ATD-compatible json to original json *)</span>
+  <span class="kw">val</span> restore : Yojson<span class="kw">.</span>Safe<span class="kw">.</span>json -&gt; Yojson<span class="kw">.</span>Safe<span class="kw">.</span>json
+<span class="kw">end</span></code></pre></div>
+<p>The type <code>Yojson.Safe.json</code> is the type of parsed JSON as provided by the yojson library.</p>
+<p>Position: on a variant type or on a record type.</p>
+<p>Value: an OCaml module identifier. Note that <code>Atdgen_runtime.Json_adapter</code> provides a few modules and functors that are ready to use. Users are however encouraged to write their own to suit their needs.</p>
+<p>Sample ATD definitions:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> document = [
+  | <span class="dt">Image</span> <span class="kw">of</span> image
+  | <span class="dt">Text</span> <span class="kw">of</span> text
+] &lt;json adapter.ocaml=<span class="st">&quot;Atdgen_runtime.Json_adapter.Type_field&quot;</span>&gt;
+
+<span class="kw">type</span> image = {
+  url: <span class="dt">string</span>;
+}
+
+<span class="kw">type</span> text = {
+  title: <span class="dt">string</span>;
+  body: <span class="dt">string</span>;
+}</code></pre></div>
+<p>ATD-compliant json values:</p>
+<ul>
+<li><code>[&quot;Image&quot;, {&quot;url&quot;: &quot;https://example.com/ocean123.jpg&quot;}]</code></li>
+<li><code>[&quot;Text&quot;, {&quot;title&quot;: &quot;Cheeses Around the World&quot;, &quot;body&quot;: &quot;...&quot;}]</code></li>
+</ul>
+<p>Corresponding json values given by some API:</p>
+<ul>
+<li><code>{&quot;type&quot;: &quot;Image&quot;, &quot;url&quot;: &quot;https://example.com/ocean123.jpg&quot;}</code></li>
+<li><code>{&quot;type&quot;: &quot;Text&quot;, &quot;title&quot;: &quot;Cheeses Around the World&quot;, &quot;body&quot;: &quot;...&quot;}</code></li>
+</ul>
+<p>The json adapter <code>Type_field</code> that ships with the atdgen runtime takes care of converting between these two forms. For information on how to write your own adapter, please consult the documentation for the yojson library.</p>
 <h2 id="section-biniou">Section '<code>biniou</code>'</h2>
 <h3 id="field-repr-1">Field '<code>repr</code>'</h3>
 <h4 id="integers">Integers</h4>
@@ -946,7 +997,7 @@ $ atdgen -v example.atd</code></pre>
 <p>Position: after any type expression except type variables</p>
 <p>Values: OCaml function that takes one argument of the given type and returns a bool</p>
 <p>Semantics: <code>atdgen -v</code> produces for each type named <em>t</em> a function <code>validate_</code><em>t</em>:</p>
-<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">val</span> validate_t : Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; t -&gt; Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">val</span> validate_t : Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; t -&gt; Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span></code></pre></div>
 <p>Such a function returns <code>None</code> if and only if the value and all of its subnodes pass all the validators specified by annotations of the form <code>&lt;ocaml validator=&quot;...&quot;&gt;</code> or <code>&lt;ocaml valid=&quot;...&quot;&gt;</code> (at most one per node).</p>
 <p>Example:</p>
 <div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> positive = <span class="dt">int</span> &lt;ocaml validator=<span class="st">&quot;fun x -&gt; x &gt; 0&quot;</span>&gt;
@@ -963,7 +1014,7 @@ $ atdgen -v example.atd</code></pre>
 | <span class="dt">None</span> -&gt; ()
 | <span class="dt">Some</span> e -&gt;
     Printf<span class="kw">.</span>eprintf <span class="st">&quot;Error: %s</span><span class="ch">\n</span><span class="st">%!&quot;</span>
-      (Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>string_of_error e)</code></pre></div>
+      (Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>string_of_error e)</code></pre></div>
 <p>The above code prints the following error message:</p>
 <pre><code>Error: Validation error; path = &lt;root&gt;.y</code></pre>
 <p>In order to customize the error message and print the faulty value, use <code>validator</code> instead of <code>valid</code>, as described next.</p>
@@ -972,7 +1023,7 @@ $ atdgen -v example.atd</code></pre>
 <p>Position: after any type expression except type variables</p>
 <p>Values: OCaml function that takes the path in current JSON structure and the object to validate, and returns an optional error.</p>
 <p>Semantics: <code>atdgen -v</code> produces for each type named <em>t</em> a function <code>validate_</code><em>t</em>:</p>
-<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">val</span> validate_t : Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; t -&gt; Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">val</span> validate_t : Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>path -&gt; t -&gt; Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>error <span class="dt">option</span></code></pre></div>
 <p>Such a function returns <code>None</code> if and only if the value and all of its subnodes pass all the validators specified by annotations of the form <code>&lt;ocaml validator=&quot;...&quot;&gt;</code> or <code>&lt;ocaml valid=&quot;...&quot;&gt;</code> (at most one per node).</p>
 <p>Example:</p>
 <div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> positive = <span class="dt">int</span> &lt;ocaml validator=<span class="st">&quot;</span>
@@ -980,7 +1031,7 @@ $ atdgen -v example.atd</code></pre>
 <span class="st">    if x &gt; 0 then None</span>
 <span class="st">    else</span>
 <span class="st">      Some (</span>
-<span class="st">        Ag_util.Validation.error</span>
+<span class="st">        Atdgen_runtime.Util.Validation.error</span>
 <span class="st">          ~msg: (</span><span class="ch">\&quot;</span><span class="st">Not a positive integer: </span><span class="ch">\&quot;</span><span class="st"> ^ string_of_int x)</span>
 <span class="st">          path</span>
 <span class="st">      )</span>
@@ -998,7 +1049,7 @@ $ atdgen -v example.atd</code></pre>
 | <span class="dt">None</span> -&gt; ()
 | <span class="dt">Some</span> e -&gt;
     Printf<span class="kw">.</span>eprintf <span class="st">&quot;Error: %s</span><span class="ch">\n</span><span class="st">%!&quot;</span>
-      (Ag_util<span class="kw">.</span>Validation<span class="kw">.</span>string_of_error e)</code></pre></div>
+      (Atdgen_runtime<span class="kw">.</span>Util<span class="kw">.</span>Validation<span class="kw">.</span>string_of_error e)</code></pre></div>
 <p>results in printing:</p>
 <pre><code>Error: Validation error: Not a positive integer: 0; path = &lt;root&gt;.y</code></pre>
 <h2 id="section-ocaml_biniou">Section '<code>ocaml_biniou</code>'</h2>
@@ -1091,7 +1142,7 @@ $ atdgen -v example.atd</code></pre>
 
 <span class="co">(**</span>
 <span class="co">  The type of a point. A value [p] can be created as follows:</span>
-
+<span class="co">  </span>
 <span class="co">{v</span>
 <span class="co">let p = \{ x = 1.2; y = 5.0 \}</span>
 <span class="co">v}</span>
